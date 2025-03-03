@@ -31,11 +31,6 @@ public class PlayerMovement : MonoBehaviour
 		speed = 4;
 		sprintSpeed = 25;
 
-
-		if (_avatar == null) return;
-
-		if (!_avatar.IsMe) return;
-
 		characterController = GetComponent<CharacterController>();
 		
 		// Assign the main camera if it's not assigned
