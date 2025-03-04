@@ -94,24 +94,19 @@ public class PlayerMovement : MonoBehaviour
 	}
 
 	void RotatePlayer()
-	{
-		if (!canMove) return;
+    {
+        if (!canMove) return;
 
-		float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-		float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
 
-		float controllerX = Input.GetAxis("Controller X") * controllerSensitivity * Time.deltaTime;
-		float controllerY = Input.GetAxis("Controller Y") * controllerSensitivity * Time.deltaTime;
-		
-		float inputX = Mathf.Abs(mouseX) > Mathf.Epsilon ? mouseX : controllerX;
-		float inputY = Mathf.Abs(mouseY) > Mathf.Epsilon ? mouseY : controllerY;
+        rotationX -= mouseY;
+        rotationX = Mathf.Clamp(rotationX, -90f, 90f);
+        rotationY += mouseX;
 
-		rotationX = Mathf.Clamp(rotationX - inputY, -90f, 90f);
-		rotationY += inputX;
-
-		playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
+        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
 		transform.localRotation = Quaternion.Euler(0, rotationY, 0);
 		
 		Cursor.visible = false;
-	}
+    }
 }
