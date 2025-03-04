@@ -4,6 +4,7 @@ using UnityEngine;
 public class SaveLoadSystem : MonoBehaviour
 
 {
+   {
     // Enum to define the possible inventory items
     public enum InventoryItem
     {
@@ -19,43 +20,35 @@ public class SaveLoadSystem : MonoBehaviour
     // Names for the save slots
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    // Interval in seconds between auto-saves
+    public float autoSaveInterval = 30f;
+
+    private float saveTimer;
+
     void Start()
     {
-        
+        // Start auto-save timer
+        saveTimer = autoSaveInterval;
     }
 
-    // Update is called once per frame
     void Update()
-    
-
     {
-        // Check for user input to trigger save/load actions
+        // Update the save timer every frame
+        saveTimer -= Time.deltaTime;
 
-        // Save the game when the player presses the "S" key
-        if (Input.GetKeyDown(KeyCode.S))
+        // Check if it's time to auto-save
+        if (saveTimer <= 0f)
         {
-            SaveGame(0);  // Save to the first save slot
-            Debug.Log("Game saved!");
-        }
+            // Automatically save to the first save slot for example (can be rotated to other slots)
+            AutoSave(0);
 
-        // Load the game when the player presses the "L" key
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            LoadGame(0);  // Load from the first save slot
-            Debug.Log("Game loaded!");
-        }
-
-        // Clear save slot when the player presses the "C" key
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            ClearSaveSlot(0);  // Clear the first save slot
-            Debug.Log("Save slot cleared!");
+            // Reset the timer
+            saveTimer = autoSaveInterval;
         }
     }
 
-    // Save game data to a specific slot (position and inventory)
-    public void SaveGame(int slotIndex)
+    // Auto-save function that saves to a specific slot (you can add logic to rotate save slots if needed)
+    private void AutoSave(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= saveSlotNames.Length)
         {
@@ -76,11 +69,13 @@ public class SaveLoadSystem : MonoBehaviour
             PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_Item_" + i, (int)inventory[i]);
         }
 
+        // Save the data to disk
         PlayerPrefs.Save();
-        Debug.Log("Game saved to " + saveSlotNames[slotIndex]);
+
+        Debug.Log("Auto-saved to " + saveSlotNames[slotIndex]);
     }
 
-    // Load game data from a specific slot (position and inventory)
+    // Function to load game data from a specific slot (position and inventory)
     public void LoadGame(int slotIndex)
     {
         if (slotIndex < 0 || slotIndex >= saveSlotNames.Length)
@@ -135,6 +130,3 @@ public class SaveLoadSystem : MonoBehaviour
         Debug.Log("Save slot " + saveSlotNames[slotIndex] + " cleared.");
     }
 }
-
-
-
