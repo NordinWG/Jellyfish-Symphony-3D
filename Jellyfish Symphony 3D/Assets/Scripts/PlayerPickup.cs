@@ -4,7 +4,7 @@ using TMPro;  // Importing TextMeshPro namespace
 public class PlayerPickup : MonoBehaviour
 {
     public Camera playerCamera;
-    public float raycastDistance = 5f; // Distance at which you can pick up items
+    public float raycastDistance = 50f; // Distance at which you can pick up items
     public LayerMask pickupLayer; // Layer to detect pickup items (set in Inspector)
 
     public TextMeshProUGUI pickupPromptText;  // Reference to TMP Text for the prompt ("Press E to pick up")
