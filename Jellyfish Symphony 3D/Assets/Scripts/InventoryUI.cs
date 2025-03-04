@@ -49,7 +49,7 @@ public class InventoryUI : MonoBehaviour
                 quantityRect.anchorMin = new Vector2(1, 1); // Anchor to the top-right
                 quantityRect.anchorMax = new Vector2(1, 1); // Anchor to the top-right
                 quantityRect.pivot = new Vector2(1, 1); // Pivot to the top-right
-                quantityRect.anchoredPosition = new Vector2(-15, -15); // Move it more down and left
+                quantityRect.anchoredPosition = new Vector2(5, -10); // Move it more down and left
                 
                 // Adjust the width of the TextMeshPro box (make it wider)
                 quantityRect.sizeDelta = new Vector2(40, quantityRect.sizeDelta.y); // Increase width, keep height same

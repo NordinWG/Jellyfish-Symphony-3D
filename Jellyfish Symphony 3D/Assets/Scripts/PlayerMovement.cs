@@ -15,6 +15,10 @@ public class PlayerMovement : MonoBehaviour
 	private Vector3 moveDirection = Vector3.zero;
 	public float hor;
 	public float ver;
+	public Canvas mainmenu;
+	public Canvas pauseMenu;
+	public Canvas saveLoad;
+	public Canvas inventory;
 	public Camera playerCamera;
 	private CharacterController characterController;
 
@@ -53,13 +57,23 @@ public class PlayerMovement : MonoBehaviour
 
 	void Update()
 	{
+		print(mainmenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled);
 
 		if (playerCamera != null && !playerCamera.gameObject.activeInHierarchy)
 		{
 			playerCamera.gameObject.SetActive(true);
 		}
 
-        canMove = true;
+        if(mainmenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled)
+		{
+			canMove = false;
+		}
+		if(!mainmenu.enabled && !pauseMenu.enabled && !saveLoad.enabled && !inventory.enabled)
+		{
+			canMove = true;
+			Cursor.visible = false;
+        	Cursor.lockState = CursorLockMode.Locked;
+		}
         
 		Movement();
 		RotatePlayer();
@@ -82,14 +96,6 @@ public class PlayerMovement : MonoBehaviour
 
 		moveDirection = (forward * curSpeedX) + (right * curSpeedY);
 
-		if (Input.GetButton("Jump") && characterController.isGrounded)
-			moveDirection.y = jumpSpeed;
-		else
-			moveDirection.y = movementDirectionY;
-
-		if (!characterController.isGrounded)
-			moveDirection.y -= gravity * Time.deltaTime;
-
 		characterController.Move(moveDirection * Time.deltaTime);
 	}
 
@@ -106,7 +112,5 @@ public class PlayerMovement : MonoBehaviour
 
         playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
 		transform.localRotation = Quaternion.Euler(0, rotationY, 0);
-		
-		Cursor.visible = false;
     }
 }
