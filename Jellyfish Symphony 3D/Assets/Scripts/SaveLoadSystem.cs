@@ -1,8 +1,8 @@
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using System.Collections;
 
 public class SaveLoadSystem : MonoBehaviour
 {
@@ -10,195 +10,194 @@ public class SaveLoadSystem : MonoBehaviour
     public List<InventoryItem> inventory = new List<InventoryItem>();
 
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
-    public GameObject saveLoadPanel;
+    public GameObject savePanel;
+    public GameObject loadPanel;
     public TMP_Text[] saveSlotTexts;
-    public Button[] saveButtons; // Buttons for each save slot
+    public TMP_Text[] loadSlotTexts;
+    public Button[] saveButtons;
+    public Button[] loadButtons;
+    public Button saveButton;
+    public Button loadButton;
 
-    public Button saveButton; // Reference to the Save button
-    public Button loadButton; // Reference to the Load button
+    // New TMP_Text for displaying the current loaded slot outside of the Save/Load panels
+    public TMP_Text currentLoadedSlotText;
 
-    private int nextSaveSlot = 0; // Track the next available save slot
-    private bool isSaving = false; // To avoid saving multiple times in one frame
+    // AutoSave references
+    public GameObject autoSaveIcon;  // The icon that rotates during autosave
+    public TMP_Text autoSaveText;    // The text displaying "Autosaving..."
+    private float autoSaveInterval = 10f; // 10 seconds in seconds for testing
+    private float autoSaveTimer;
+
+    private int lastLoadedSlotIndex = -1;  // Store the index of the last loaded slot
+    private bool isAutoSaving = false;     // Flag to indicate if autosaving is in progress
 
     void Start()
     {
-        UpdateSaveSlotUI(); // Initialize the UI with current save state
+        UpdateSaveSlotUI(); // Initialize UI on start
+        autoSaveTimer = autoSaveInterval; // Start the timer at the full interval
     }
 
-    // Save the game data
+    void Update()
+    {
+        // Update the auto-save timer
+        autoSaveTimer -= Time.deltaTime;
+
+        // If the timer runs out, trigger autosave
+        if (autoSaveTimer <= 0f && lastLoadedSlotIndex != -1)
+        {
+            AutoSave(lastLoadedSlotIndex);  // Autosave the loaded slot
+            autoSaveTimer = autoSaveInterval; // Reset the timer
+        }
+
+        if (Input.GetKeyDown(KeyCode.S) && lastLoadedSlotIndex != -1)
+        {
+            AutoSave(lastLoadedSlotIndex);  // Autosave the loaded slot when pressing 'S'
+        }
+
+        // Handle rotating the icon if it's active
+        if (isAutoSaving)
+        {
+            autoSaveIcon.transform.Rotate(Vector3.forward * -180 * Time.deltaTime); // Rotate the icon on Z-axis
+        }
+
+        // Delete all saved data when pressing 'End' key (for testing purposes)
+        if (Input.GetKeyDown(KeyCode.End))
+        {
+            PlayerPrefs.DeleteAll();
+            PlayerPrefs.Save();
+            UpdateSaveSlotUI();
+            Debug.Log("All saves deleted"); // Debug message
+        }
+    }
+
+    // Saves the game to a specific slot
     public void SaveGame(int slotIndex)
     {
-        if (isSaving || nextSaveSlot > saveSlotNames.Length) return;
-
-        isSaving = true; // Block further saving while this action is in progress
-
-        // If all slots are full, do not save and flash the save button red
-        if (nextSaveSlot >= saveSlotNames.Length)
-        {
-            StartCoroutine(IndicateSaveLimit());
-            isSaving = false;
-            return;
-        }
-
-        // Save to the next available slot
-        slotIndex = nextSaveSlot;
-
-        string saveName = "World " + (slotIndex + 1); // Name as World 1, World 2, etc.
-
-        // Save the name to PlayerPrefs
+        string saveName = "World " + (slotIndex + 1);
         PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_Name", saveName);
-
-        // Save player position
-        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PosX", transform.position.x);
-        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PosY", transform.position.y);
-        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PosZ", transform.position.z);
-
-        // Save inventory items (using their enum integer values)
-        PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_InventorySize", inventory.Count);
-
-        for (int i = 0; i < inventory.Count; i++)
-        {
-            PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_Item_" + i, (int)inventory[i]);
-        }
-
         PlayerPrefs.Save();
-
-        // Update nextSaveSlot to the next available slot
-        nextSaveSlot = Mathf.Min(nextSaveSlot + 1, saveSlotNames.Length);
-
-        // Update the UI after saving
-        UpdateSaveSlotUI();
-
-        Debug.Log("Game saved to " + saveSlotNames[slotIndex]);
-
-        isSaving = false; // Allow new save attempts
+        Debug.Log("Game saved in slot " + (slotIndex + 1)); // Debug message
+        UpdateSaveSlotUI(); // Update UI after saving
     }
 
-    // Load the game data
+    // Loads the game from a specific slot
     public void LoadGame(int slotIndex)
     {
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName == "Empty")
         {
-            Debug.Log("No save found in this slot.");
-            return; // Exit if there's no save in this slot
+            Debug.Log("No save found in slot " + (slotIndex + 1)); // Debug message
+            return;
         }
-
-        // Load player position
-        float posX = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PosX", 0f);
-        float posY = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PosY", 0f);
-        float posZ = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PosZ", 0f);
-        transform.position = new Vector3(posX, posY, posZ);
-
-        // Load inventory
-        int inventorySize = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_InventorySize", 0);
-        inventory.Clear();
-        for (int i = 0; i < inventorySize; i++)
-        {
-            int itemValue = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_Item_" + i, 0);
-            inventory.Add((InventoryItem)itemValue);
-        }
-
         PlayerPrefs.Save();
-
-        // Update the UI after loading
+        Debug.Log("Game loaded from slot " + (slotIndex + 1)); // Debug message
         UpdateSaveSlotUI();
 
-        Debug.Log("Game loaded from " + saveSlotNames[slotIndex]);
+        // Set the loaded slot index and show the current loaded slot text
+        lastLoadedSlotIndex = slotIndex;
+        currentLoadedSlotText.text = "Current Loaded Slot: " + saveName;
 
-        // Update the UI for loaded state (Green color)
-        saveButtons[slotIndex].GetComponent<Image>().color = Color.green; // Green when loaded
+        // Ensure the autosave icon and text are hidden if they are already visible
+        autoSaveIcon.SetActive(false);
+        autoSaveText.text = "";
     }
 
-    // Clear a specific save slot
-    public void ClearSaveSlot(int slotIndex)
+    // Autosave function
+    private void AutoSave(int slotIndex)
     {
-        // Clear all saved data for the selected slot
-        PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_Name");
-        PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_PosX");
-        PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_PosY");
-        PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_PosZ");
-
-        int inventorySize = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_InventorySize", 0);
-        for (int i = 0; i < inventorySize; i++)
+        // Display the autosaving UI if a valid slot is loaded
+        string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
+        if (saveName != "Empty")  // Only autosave if a valid slot is loaded
         {
-            PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_Item_" + i);
+            // Show the rotating icon and "Autosaving..." text
+            autoSaveIcon.SetActive(true);
+            autoSaveText.text = "Autosaving...";  // Set the text once, don't update it
+            isAutoSaving = true;  // Flag to start the rotation
+
+            // Perform the save operation to the currently loaded slot
+            SaveGame(slotIndex); // Save to the loaded slot
+
+            // Log the autosave
+            Debug.Log("Auto-save triggered for slot " + (slotIndex + 1)); // Debug message
+
+            // Call the coroutine to hide the autosaving UI after 4 seconds
+            StartCoroutine(HideAutoSaveUI());
         }
-        PlayerPrefs.DeleteKey(saveSlotNames[slotIndex] + "_InventorySize");
-
-        PlayerPrefs.Save();
-
-        // After clearing, set nextSaveSlot to the lowest available slot
-        nextSaveSlot = Mathf.Min(nextSaveSlot, slotIndex);
-
-        // Update the UI after clearing the slot
-        UpdateSaveSlotUI(); // Refresh the UI to reflect changes
-
-        Debug.Log("Save slot " + saveSlotNames[slotIndex] + " cleared.");
+        else
+        {
+            // Ensure the autosave UI is hidden if no valid slot is loaded
+            autoSaveIcon.SetActive(false);
+            autoSaveText.text = "";
+        }
     }
 
-    // Update the UI for save slots (button colors and text)
+    // Coroutine to hide the autosaving UI after a brief period
+    private IEnumerator HideAutoSaveUI()
+    {
+        // Wait for 4 seconds to let the "Autosaving..." message appear
+        yield return new WaitForSeconds(4f);
+
+        // Hide the autosaving UI and stop rotation
+        autoSaveIcon.SetActive(false);  // Hide the rotating icon
+        autoSaveText.text = "";        // Clear the autosaving message
+        isAutoSaving = false;          // Stop rotating the icon
+    }
+
+    // Updates the UI to reflect the save slot states
     void UpdateSaveSlotUI()
     {
         for (int i = 0; i < saveSlotNames.Length; i++)
         {
-            // Get save name from PlayerPrefs (empty if no save)
             string saveName = PlayerPrefs.GetString(saveSlotNames[i] + "_Name", "Empty");
+            saveSlotTexts[i].text = saveName;
+            loadSlotTexts[i].text = saveName;
 
-            // Update the slot text to "World X" or "Empty"
-            saveSlotTexts[i].text = saveName == "Empty" ? "Empty" : saveName;
-
-            // Update button color and interactivity based on whether the slot has saved data
-            if (saveName == "Empty")
-            {
-                saveButtons[i].interactable = true; // Enable button for empty slots
-                saveButtons[i].GetComponent<Image>().color = Color.white; // Set button color to white
-            }
-            else
-            {
-                saveButtons[i].interactable = true; // Enable button for filled slots
-                saveButtons[i].GetComponent<Image>().color = Color.white; // Set button color to white
-            }
+            // Set button color: gray if empty, white if used
+            Color buttonColor = saveName == "Empty" ? new Color(0.75f, 0.75f, 0.75f) : Color.white;
+            saveButtons[i].image.color = buttonColor;
+            loadButtons[i].image.color = buttonColor;
         }
     }
 
-
-    // Method to open the Save/Load UI
-    public void OpenSaveLoadUI()
+    // Opens the save panel and hides the load panel
+    public void OpenSavePanel()
     {
-        saveLoadPanel.SetActive(true);
-        UpdateSaveSlotUI(); // Refresh UI when opening
-        saveButton.gameObject.SetActive(false); // Hide save button when the save/load panel is open
-        loadButton.gameObject.SetActive(false); // Hide load button when the save/load panel is open
+        savePanel.SetActive(true);
+        loadPanel.SetActive(false);
+        saveButton.gameObject.SetActive(false);
+        loadButton.gameObject.SetActive(false);
+
+        // Show the current loaded slot text when Save Panel is open
+        currentLoadedSlotText.gameObject.SetActive(true);
+
+        Debug.Log("Opened Save Panel"); // Debug message
     }
 
-    // Method to close the Save/Load UI
-    public void CloseSaveLoadUI()
+    // Opens the load panel and hides the save panel
+    public void OpenLoadPanel()
     {
-        saveLoadPanel.SetActive(false);
-        saveButton.gameObject.SetActive(true); // Show save button when the save/load panel is closed
-        loadButton.gameObject.SetActive(true); // Show load button when the save/load panel is closed
+        loadPanel.SetActive(true);
+        savePanel.SetActive(false);
+        saveButton.gameObject.SetActive(false);
+        loadButton.gameObject.SetActive(false);
+
+        // Show the current loaded slot text when Load Panel is open
+        currentLoadedSlotText.gameObject.SetActive(true);
+
+        Debug.Log("Opened Load Panel"); // Debug message
     }
 
-    // Coroutine to indicate the save limit is reached by turning the button red and flashing
-    private IEnumerator IndicateSaveLimit()
+    // Closes both panels and restores the save/load buttons
+    public void ClosePanels()
     {
-        saveButton.GetComponent<Image>().color = Color.red; // Turn button red
-        yield return new WaitForSeconds(0.5f); // Wait for half a second
-        saveButton.GetComponent<Image>().color = Color.white; // Reset button color to white
-        yield return new WaitForSeconds(0.5f); // Wait for half a second
-        saveButton.GetComponent<Image>().color = Color.red; // Turn button red again
-        yield return new WaitForSeconds(0.5f); // Wait for another half second
-        saveButton.GetComponent<Image>().color = Color.white; // Reset button color to white
-    }
+        savePanel.SetActive(false);
+        loadPanel.SetActive(false);
+        saveButton.gameObject.SetActive(true);
+        loadButton.gameObject.SetActive(true);
 
-    // Method to handle loading a specific save slot (button click)
-    public void OnSlotClicked(int slotIndex)
-    {
-        // Load the game data when a slot is clicked
-        LoadGame(slotIndex);
+        // Hide the current loaded slot text when both panels are closed
+        currentLoadedSlotText.gameObject.SetActive(false);
 
-        // Update the UI for loaded state (Green color)
-        saveButtons[slotIndex].GetComponent<Image>().color = Color.green; // Green when loaded
+        Debug.Log("Closed Save/Load Panels"); // Debug message
     }
 }
