@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro; // TextMeshPro for UI text
+using TMPro;
 
 public class InventoryUI : MonoBehaviour
 {
@@ -13,36 +13,40 @@ public class InventoryUI : MonoBehaviour
 
     private void Start()
     {
+        Debug.Log("InventoryUI: Start() called. Subscribing to inventory changes.");
         Inventory.instance.onInventoryChangedCallback += UpdateUI;
         UpdateUI();
     }
 
     public void ToggleInventory()
     {
-        inventoryPanel.SetActive(!inventoryPanel.activeSelf);
-        Debug.Log("Toggling inventory UI. Active: " + inventoryPanel.activeSelf);
+        bool isActive = !inventoryPanel.activeSelf;
+        inventoryPanel.SetActive(isActive);
+        Debug.Log($"InventoryUI: Toggling inventory. Now active: {isActive}");
     }
 
     void UpdateUI()
     {
-        Debug.Log("Updating Inventory UI...");
+        Debug.Log("InventoryUI: Updating UI...");
 
-        // Clear old UI
         foreach (GameObject slot in slots)
+        {
+            Debug.Log("InventoryUI: Destroying old slot.");
             Destroy(slot);
+        }
 
         slots.Clear();
+        Debug.Log("InventoryUI: Cleared old inventory slots.");
 
-        // Populate new UI
         foreach (InventorySlot slot in Inventory.instance.inventorySlots)
         {
-            Debug.Log("Adding Item to UI: " + slot.item.itemName); // Debugging
-
+            Debug.Log($"InventoryUI: Creating new slot for {slot.item.itemName} (x{slot.quantity})");
             GameObject newSlot = Instantiate(slotPrefab, slotContainer);
             newSlot.transform.GetChild(0).GetComponent<Image>().sprite = slot.item.itemIcon;
             newSlot.transform.GetChild(1).GetComponent<TMP_Text>().text = slot.quantity > 1 ? slot.quantity.ToString() : "";
-
             slots.Add(newSlot);
         }
+
+        Debug.Log("InventoryUI: Finished updating UI.");
     }
 }

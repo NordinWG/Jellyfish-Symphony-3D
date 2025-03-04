@@ -8,6 +8,7 @@ public class InventoryToggle : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
+            Debug.Log("InventoryToggle: 'I' key pressed. Toggling inventory.");
             inventoryUI.ToggleInventory();
         }
     }

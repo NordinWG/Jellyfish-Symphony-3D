@@ -7,10 +7,18 @@ public class Inventory : MonoBehaviour
 
     private void Awake()
     {
+        Debug.Log("Inventory: Awake() called.");
+
         if (instance == null)
+        {
             instance = this;
+            Debug.Log("Inventory: Instance set.");
+        }
         else
+        {
+            Debug.Log("Inventory: Duplicate instance found! Destroying this instance.");
             Destroy(gameObject);
+        }
     }
 
     public List<InventorySlot> inventorySlots = new List<InventorySlot>();
@@ -21,64 +29,64 @@ public class Inventory : MonoBehaviour
 
     void Start()
     {
-        if (onInventoryChangedCallback != null)
-            onInventoryChangedCallback.Invoke();
-
-        // Debugging: Add a test item at the start
-        Item testItem = Resources.Load<Item>("HealthPotion"); // Make sure you have a ScriptableObject named "HealthPotion"
-        if (testItem != null)
-        {
-            AddItem(testItem, 1);
-        }
+        Debug.Log("Inventory: Start() called.");
+        onInventoryChangedCallback?.Invoke();
     }
 
     public bool AddItem(Item item, int quantity)
     {
-        Debug.Log("Attempting to add item: " + item.itemName); // Debug log
+        Debug.Log($"Inventory: Trying to add {quantity}x {item.itemName}");
 
-        // Check if the item is stackable and already exists
         if (item.isStackable)
         {
+            Debug.Log("Inventory: Item is stackable, checking existing stacks.");
+
             foreach (InventorySlot slot in inventorySlots)
             {
                 if (slot.item == item && slot.quantity < item.maxStack)
                 {
                     slot.quantity = Mathf.Min(slot.quantity + quantity, item.maxStack);
-                    Debug.Log($"Stacking {item.itemName}, new quantity: {slot.quantity}");
+                    Debug.Log($"Inventory: Stacked {item.itemName}. New quantity: {slot.quantity}");
                     onInventoryChangedCallback?.Invoke();
                     return true;
                 }
             }
         }
 
-        // If it's not stackable or no stack exists, find an empty slot
         if (inventorySlots.Count < maxSlots)
         {
+            Debug.Log("Inventory: No existing stack found, adding a new slot.");
             inventorySlots.Add(new InventorySlot(item, quantity));
-            Debug.Log($"Added new item: {item.itemName}, Quantity: {quantity}");
             onInventoryChangedCallback?.Invoke();
             return true;
         }
 
-        Debug.Log("Inventory is full!");
+        Debug.Log("Inventory: Inventory is full! Cannot add item.");
         return false;
     }
 
     public void RemoveItem(Item item, int quantity)
     {
+        Debug.Log($"Inventory: Trying to remove {quantity}x {item.itemName}");
+
         for (int i = 0; i < inventorySlots.Count; i++)
         {
             if (inventorySlots[i].item == item)
             {
                 inventorySlots[i].quantity -= quantity;
-                if (inventorySlots[i].quantity <= 0)
-                    inventorySlots.RemoveAt(i);
+                Debug.Log($"Inventory: Removed {quantity}x {item.itemName}. Remaining: {inventorySlots[i].quantity}");
 
-                Debug.Log($"Removed {item.itemName}, Remaining: {inventorySlots[i].quantity}");
+                if (inventorySlots[i].quantity <= 0)
+                {
+                    Debug.Log($"Inventory: {item.itemName} quantity is 0. Removing from inventory.");
+                    inventorySlots.RemoveAt(i);
+                }
+
                 onInventoryChangedCallback?.Invoke();
                 return;
             }
         }
+        Debug.Log("Inventory: Item not found in inventory.");
     }
 }
 
@@ -92,5 +100,6 @@ public class InventorySlot
     {
         item = newItem;
         quantity = newQuantity;
+        Debug.Log($"InventorySlot: Created new slot for {item.itemName} with {quantity}x quantity.");
     }
 }
