@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
-    public static Inventory instance; // Singleton pattern for easy access
+    public static Inventory instance;
 
     private void Awake()
     {

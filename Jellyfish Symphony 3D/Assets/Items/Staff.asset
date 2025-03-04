@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemName: Staff
   itemIcon: {fileID: 0}
-  itemType: 0
+  itemType: 1
   maxStack: 1
   isStackable: 0
+  itemDescription: Staff

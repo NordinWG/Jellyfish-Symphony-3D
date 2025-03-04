@@ -17,3 +17,4 @@ MonoBehaviour:
   itemType: 1
   maxStack: 10
   isStackable: 1
+  itemDescription: Shell
