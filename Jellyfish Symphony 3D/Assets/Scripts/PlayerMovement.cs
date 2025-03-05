@@ -71,8 +71,6 @@ public class PlayerMovement : MonoBehaviour
 		if(!mainmenu.enabled && !pauseMenu.enabled && !saveLoad.enabled && !inventory.enabled)
 		{
 			canMove = true;
-			Cursor.visible = false;
-        	Cursor.lockState = CursorLockMode.Locked;
 		}
         
 		Movement();

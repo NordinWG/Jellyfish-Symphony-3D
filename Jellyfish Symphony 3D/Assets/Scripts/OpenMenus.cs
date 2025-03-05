@@ -15,10 +15,14 @@ public class OpenMenus : MonoBehaviour
             if (!pausemenu.enabled)
             {
                 PauseGame();
+                Cursor.visible = true;
+        	    Cursor.lockState = CursorLockMode.None;
             }
             else
             {
                 ResumeGame();
+                Cursor.visible = false;
+        	    Cursor.lockState = CursorLockMode.Locked;
             }
         }
     }
