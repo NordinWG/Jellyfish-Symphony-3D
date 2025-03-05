@@ -13,8 +13,10 @@ MonoBehaviour:
   m_Name: Drownie
   m_EditorClassIdentifier: 
   itemName: Drownie
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 21300000, guid: 38e4b84b71b652840b289c72b28a88c8, type: 3}
   itemType: 1
   maxStack: 1
   isStackable: 0
-  itemDescription: Drownie
+  itemDescription: This tasty, chocolaty treat isnt just any drownie. It is the drownie.
+    Its soft and fudgy taste being more magical because of a secret ingredient. Don't
+    question it, just enjoy the magical taste.

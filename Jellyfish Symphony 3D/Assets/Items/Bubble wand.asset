@@ -13,8 +13,9 @@ MonoBehaviour:
   m_Name: Bubble wand
   m_EditorClassIdentifier: 
   itemName: Bubble wand
-  itemIcon: {fileID: 0}
+  itemIcon: {fileID: 21300000, guid: d52106a6ef9aab74990f2868e27889f1, type: 3}
   itemType: 1
   maxStack: 1
   isStackable: 0
-  itemDescription: Bubble wand
+  itemDescription: Your wand. Its magic existing trough bubbles. It has been with
+    you trough thick and thin, you two are almost inseperable.
