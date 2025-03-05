@@ -8,7 +8,6 @@ public class OpenMenus : MonoBehaviour
 	public Canvas saveLoad;
     public Canvas inventory;
     public InventoryUI inventoryUI;
-    public Canvas inventory;
 
     void Update()
     {
@@ -28,7 +27,7 @@ public class OpenMenus : MonoBehaviour
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !inventory.enabled && !saveLoad.enabled))
+        if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !inventory.enabled && !saveLoad.enabled)
         {
             if (inventory != null && inventoryUI != null)
             {
