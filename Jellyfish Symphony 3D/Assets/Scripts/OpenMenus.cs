@@ -7,6 +7,8 @@ public class OpenMenus : MonoBehaviour
 	public Canvas pausemenu;
 	public Canvas saveLoad;
     public Canvas inventory;
+    public InventoryUI inventoryUI;
+    public Canvas inventory;
 
     void Update()
     {
@@ -23,6 +25,16 @@ public class OpenMenus : MonoBehaviour
                 ResumeGame();
                 Cursor.visible = false;
         	    Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !inventory.enabled && !saveLoad.enabled))
+        {
+            if (inventory != null && inventoryUI != null)
+            {
+                bool isInventoryOpen = inventory.enabled;
+                inventoryUI.ToggleInventory();
+                inventory.enabled = !isInventoryOpen;
             }
         }
     }
