@@ -6,10 +6,14 @@ using UnityEngine.UI;
 
 public class SaveLoadSystem : MonoBehaviour
 {
+    // Inventory systeem
     public enum InventoryItem { None, Drownie, Shell, Staff }
     public List<InventoryItem> inventory = new List<InventoryItem>();
 
+    // Save slot namen
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
+
+    // UI elementen voor het save/load systeem
     public GameObject saveLoadCanvas;
     public GameObject savePanel;
     public GameObject loadPanel;
@@ -20,15 +24,17 @@ public class SaveLoadSystem : MonoBehaviour
     public Button saveButton;
     public Button loadButton;
 
+    // Huidige geladen slot weergave
     public TMP_Text currentLoadedSlotText;
 
+    // Autosave UI en instellingen
     public GameObject autoSaveCanvas;
     public GameObject autoSaveIcon;
     public TMP_Text autoSaveText;
-    private float autoSaveInterval = 300f;
+    private float autoSaveInterval = 300f; // Autosave elke 5 minuten
     private float autoSaveTimer;
 
-    private int lastLoadedSlotIndex = -1;
+    private int lastLoadedSlotIndex = -1; // Houdt bij welk slot geladen is
     private bool isAutoSaving = false;
 
     void Start()
@@ -36,6 +42,7 @@ public class SaveLoadSystem : MonoBehaviour
         UpdateSaveSlotUI();
         autoSaveTimer = autoSaveInterval;
 
+        // Zorg ervoor dat de autosave UI correct is ingesteld
         if (autoSaveCanvas != null)
         {
             autoSaveCanvas.SetActive(true);
@@ -46,24 +53,29 @@ public class SaveLoadSystem : MonoBehaviour
 
     void Update()
     {
+        // Timer voor autosave
         autoSaveTimer -= Time.deltaTime;
 
+        // Start autosave als de timer op 0 is en er een slot geladen is
         if (autoSaveTimer <= 0f && lastLoadedSlotIndex != -1)
         {
             AutoSave(lastLoadedSlotIndex);
             autoSaveTimer = autoSaveInterval;
         }
 
+        // Handmatig autosaven met 'S'
         if (Input.GetKeyDown(KeyCode.S) && lastLoadedSlotIndex != -1)
         {
             AutoSave(lastLoadedSlotIndex);
         }
 
+        // Laat het autosave icoon roteren als autosaving actief is
         if (isAutoSaving)
         {
             autoSaveIcon.transform.Rotate(Vector3.forward * -180 * Time.deltaTime);
         }
 
+        // Verwijder alle saves met 'End' toets
         if (Input.GetKeyDown(KeyCode.End))
         {
             PlayerPrefs.DeleteAll();
@@ -75,6 +87,7 @@ public class SaveLoadSystem : MonoBehaviour
         }
     }
 
+    // Spel opslaan
     public void SaveGame(int slotIndex)
     {
         string saveName = "World " + (slotIndex + 1);
@@ -84,6 +97,7 @@ public class SaveLoadSystem : MonoBehaviour
         UpdateSaveSlotUI();
     }
 
+    // Spel laden
     public void LoadGame(int slotIndex)
     {
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
@@ -100,12 +114,14 @@ public class SaveLoadSystem : MonoBehaviour
         lastLoadedSlotIndex = slotIndex;
         currentLoadedSlotText.text = "Current Loaded Slot: " + saveName;
 
+        // Sluit de save/load UI na het laden
         CloseSaveLoadCanvas();
 
         autoSaveIcon.SetActive(false);
         autoSaveText.text = "";
     }
 
+    // Autosave functie
     private void AutoSave(int slotIndex)
     {
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
@@ -127,15 +143,16 @@ public class SaveLoadSystem : MonoBehaviour
         }
     }
 
+    // Verberg autosave UI na een korte tijd
     private IEnumerator HideAutoSaveUI()
     {
         yield return new WaitForSeconds(4f);
-
         autoSaveIcon.SetActive(false);
         autoSaveText.text = "";
         isAutoSaving = false;
     }
 
+    // Werk de UI bij met de huidige save slots
     void UpdateSaveSlotUI()
     {
         for (int i = 0; i < saveSlotNames.Length; i++)
@@ -150,6 +167,7 @@ public class SaveLoadSystem : MonoBehaviour
         }
     }
 
+    // Open het save-menu
     public void OpenSavePanel()
     {
         savePanel.SetActive(true);
@@ -157,10 +175,10 @@ public class SaveLoadSystem : MonoBehaviour
         saveButton.gameObject.SetActive(false);
         loadButton.gameObject.SetActive(false);
         currentLoadedSlotText.gameObject.SetActive(true);
-
         Debug.Log("Opened Save Panel");
     }
 
+    // Open het load-menu
     public void OpenLoadPanel()
     {
         loadPanel.SetActive(true);
@@ -168,10 +186,10 @@ public class SaveLoadSystem : MonoBehaviour
         saveButton.gameObject.SetActive(false);
         loadButton.gameObject.SetActive(false);
         currentLoadedSlotText.gameObject.SetActive(true);
-
         Debug.Log("Opened Load Panel");
     }
 
+    // Sluit de save/load panelen
     public void ClosePanels()
     {
         savePanel.SetActive(false);
@@ -179,10 +197,10 @@ public class SaveLoadSystem : MonoBehaviour
         saveButton.gameObject.SetActive(true);
         loadButton.gameObject.SetActive(true);
         currentLoadedSlotText.gameObject.SetActive(false);
-
         Debug.Log("Closed Save/Load Panels");
     }
 
+    // Sluit de gehele save/load UI
     public void CloseSaveLoadCanvas()
     {
         if (saveLoadCanvas != null)
