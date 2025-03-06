@@ -1,12 +1,14 @@
-using System;
-using System.Collections;
+using UnityEngine.SceneManagement;
 using System.Collections.Generic;
-using UnityEngine;
+using System.Collections;
 using UnityEngine.UI;
+using UnityEngine;
+using System;
 using TMPro;
 
 public class OpenMenus : MonoBehaviour
 {
+    [Header("Canvas")]
     public Canvas mainmenu;
     public Canvas pausemenu;
     public Canvas saveLoad;
@@ -14,42 +16,46 @@ public class OpenMenus : MonoBehaviour
     public GameObject itemDescription;
     public InventoryUI inventoryUI;
 
+
+    [Header("Quit Buttons")]
+    public Button MainMenuQUIT;
+    public Button PauseMainMenuB;
+
+    void Start()
+    {
+        MainMenuQUIT.onClick.AddListener(QuitGame);
+        PauseMainMenuB.onClick.AddListener(ResetGame);
+    }
     void Update()
     {
-        // Pause Menu Toggle (Escape Key)
         if (Input.GetKeyDown(KeyCode.Escape) && !pausemenu.enabled && !mainmenu.enabled && !inventory.enabled && !saveLoad.enabled)
         {
             if (!pausemenu.enabled)
             {
-                print("aA");
                 PauseGame();
                 Cursor.visible = true;
                 Cursor.lockState = CursorLockMode.None;
             }
             else
             {
-                print("bB");
                 ResumeGame();
                 Cursor.visible = false;
                 Cursor.lockState = CursorLockMode.Locked;
             }
         }
 
-        // Inventory Toggle (I Key)
         if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled)
         {
             bool isInventoryOpen = inventory.enabled;
 
             if (!isInventoryOpen)
             {
-                Debug.Log("Opening Inventory...");
                 inventoryUI.ToggleInventory();
                 inventory.enabled = true;
                 itemDescription.SetActive(true);
             }
             else
             {
-                Debug.Log("Closing Inventory...");
                 inventory.enabled = false;
                 inventoryUI.ToggleInventory();
                 itemDescription.SetActive(false);
@@ -65,5 +71,16 @@ public class OpenMenus : MonoBehaviour
     void ResumeGame()
     {
         pausemenu.enabled = false;
+    }
+
+    void QuitGame()
+    {
+        Application.Quit();
+    }
+
+    void ResetGame()
+    {
+        Time.timeScale = 1;
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }
