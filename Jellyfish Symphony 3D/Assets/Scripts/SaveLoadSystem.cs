@@ -6,207 +6,197 @@ using UnityEngine.UI;
 
 public class SaveLoadSystem : MonoBehaviour
 {
-    // Inventory systeem
     public enum InventoryItem { None, Drownie, Shell, Staff }
     public List<InventoryItem> inventory = new List<InventoryItem>();
 
-    // Save slot namen
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
 
-    // UI elementen voor het save/load systeem
-    public GameObject saveLoadCanvas;
-    public GameObject savePanel;
-    public GameObject loadPanel;
+    public Canvas saveLoadCanvas;
     public TMP_Text[] saveSlotTexts;
-    public TMP_Text[] loadSlotTexts;
-    public Button[] saveButtons;
-    public Button[] loadButtons;
+    public Button[] slotButtons;
     public Button saveButton;
-    public Button loadButton;
 
-    // Huidige geladen slot weergave
-    public TMP_Text currentLoadedSlotText;
-
-    // Autosave UI en instellingen
     public GameObject autoSaveCanvas;
     public GameObject autoSaveIcon;
     public TMP_Text autoSaveText;
-    private float autoSaveInterval = 300f; // Autosave elke 5 minuten
+    private float autoSaveInterval = 300f;
     private float autoSaveTimer;
 
-    private int lastLoadedSlotIndex = -1; // Houdt bij welk slot geladen is
-    private bool isAutoSaving = false;
+    private int currentSlotIndex = -1;  // -1 indicates no slot selected yet
 
     void Start()
     {
         UpdateSaveSlotUI();
         autoSaveTimer = autoSaveInterval;
-
-        // Zorg ervoor dat de autosave UI correct is ingesteld
-        if (autoSaveCanvas != null)
-        {
-            autoSaveCanvas.SetActive(true);
-            autoSaveIcon.SetActive(false);
-            autoSaveText.text = "";
-        }
+        autoSaveCanvas?.SetActive(true);
+        autoSaveIcon?.SetActive(false);
+        autoSaveText.text = "";
     }
 
     void Update()
     {
-        // Timer voor autosave
         autoSaveTimer -= Time.deltaTime;
 
-        // Start autosave als de timer op 0 is en er een slot geladen is
-        if (autoSaveTimer <= 0f && lastLoadedSlotIndex != -1)
+        // Trigger autosave on the 'S' key (if a game is loaded)
+        if (Input.GetKeyDown(KeyCode.S) && currentSlotIndex != -1)
         {
-            AutoSave(lastLoadedSlotIndex);
-            autoSaveTimer = autoSaveInterval;
+            AutoSave();
         }
 
-        // Handmatig autosaven met 'S'
-        if (Input.GetKeyDown(KeyCode.S) && lastLoadedSlotIndex != -1)
-        {
-            AutoSave(lastLoadedSlotIndex);
-        }
-
-        // Laat het autosave icoon roteren als autosaving actief is
-        if (isAutoSaving)
-        {
-            autoSaveIcon.transform.Rotate(Vector3.forward * -180 * Time.deltaTime);
-        }
-
-        // Verwijder alle saves met 'End' toets
+        // Trigger delete all saves on the 'End' key
         if (Input.GetKeyDown(KeyCode.End))
         {
-            PlayerPrefs.DeleteAll();
-            PlayerPrefs.Save();
-            lastLoadedSlotIndex = -1;
-            currentLoadedSlotText.text = "Current Loaded Slot: None";
-            UpdateSaveSlotUI();
-            Debug.Log("All saves deleted");
+            DeleteAllSaves();
+        }
+
+        if (autoSaveTimer <= 0f && currentSlotIndex != -1)
+        {
+            AutoSave();
+            autoSaveTimer = autoSaveInterval;
         }
     }
 
-    // Spel opslaan
-    public void SaveGame(int slotIndex)
+    // Open the save/load panel
+    public void OpenSaveLoadPanel()
     {
-        string saveName = "World " + (slotIndex + 1);
-        PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_Name", saveName);
-        PlayerPrefs.Save();
-        Debug.Log("Game saved in slot " + (slotIndex + 1));
+        saveLoadCanvas.enabled = true;
         UpdateSaveSlotUI();
     }
 
-    // Spel laden
-    public void LoadGame(int slotIndex)
+    // Select the save slot
+    public void SelectSlot(int slotIndex)
     {
+        currentSlotIndex = slotIndex; // Set current slot index to the selected slot
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName == "Empty")
         {
-            Debug.Log("No save found in slot " + (slotIndex + 1));
-            return;
+            SaveGame(slotIndex);  // Save if the slot is empty
         }
-
-        PlayerPrefs.Save();
-        Debug.Log("Game loaded from slot " + (slotIndex + 1));
-        UpdateSaveSlotUI();
-
-        lastLoadedSlotIndex = slotIndex;
-        currentLoadedSlotText.text = "Current Loaded Slot: " + saveName;
-
-        // Sluit de save/load UI na het laden
-        CloseSaveLoadCanvas();
-
-        autoSaveIcon.SetActive(false);
-        autoSaveText.text = "";
+        else
+        {
+            LoadGame(slotIndex);  // Load the game if the slot is not empty
+        }
     }
 
-    // Autosave functie
-    private void AutoSave(int slotIndex)
+    // Load game from the selected slot
+    public void LoadGame(int slotIndex)
     {
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName != "Empty")
         {
-            if (autoSaveCanvas != null)
-            {
-                autoSaveIcon.SetActive(true);
-                autoSaveText.text = "Autosaving...";
-            }
-
-            isAutoSaving = true;
-
-            SaveGame(slotIndex);
-
-            Debug.Log("Auto-save triggered for slot " + (slotIndex + 1));
-
-            StartCoroutine(HideAutoSaveUI());
+            currentSlotIndex = slotIndex;
+            Debug.Log("Game Loaded from slot " + (slotIndex + 1));
+            CloseSaveLoadCanvas();
+        }
+        else
+        {
+            Debug.Log("No game found in slot " + (slotIndex + 1));
         }
     }
 
-    // Verberg autosave UI na een korte tijd
-    private IEnumerator HideAutoSaveUI()
+    // Save game to the selected slot
+    public void SaveGame(int slotIndex)
     {
-        yield return new WaitForSeconds(4f);
-        autoSaveIcon.SetActive(false);
-        autoSaveText.text = "";
-        isAutoSaving = false;
+        PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_Name", "World " + (slotIndex + 1));
+        PlayerPrefs.Save();
+        currentSlotIndex = slotIndex; // Save to the selected slot
+        Debug.Log("Game Saved to slot " + (slotIndex + 1));
+        UpdateSaveSlotUI();
+        CloseSaveLoadCanvas();
     }
 
-    // Werk de UI bij met de huidige save slots
+    // Autosave function
+    private void AutoSave()
+    {
+        if (currentSlotIndex == -1) return;
+
+        // Show autosave UI elements (like the "Saving..." message)
+        autoSaveIcon.SetActive(true);
+        autoSaveText.text = "Autosaving...";
+
+        // Start spinning the auto-save icon continuously
+        StartCoroutine(SpinAutoSaveIcon());
+
+        // Save the game to the current slot
+        SaveGame(currentSlotIndex);
+
+        // Hide the "Saving..." UI after the save
+        StartCoroutine(HideAutoSaveUI());
+    }
+
+    // Triggered by manual save button in pause menu
+    public void OnSaveButtonClicked()
+    {
+        if (currentSlotIndex != -1)
+        {
+            // Show saving UI elements (like the "Saving..." message)
+            autoSaveIcon.SetActive(true);
+            autoSaveText.text = "Saving...";
+
+            // Start spinning the auto-save icon continuously
+            StartCoroutine(SpinAutoSaveIcon());
+
+            // Save the game to the current slot
+            SaveGame(currentSlotIndex);
+
+            // Hide the "Saving..." UI after the save
+            StartCoroutine(HideAutoSaveUI());
+        }
+        else
+        {
+            Debug.LogWarning("No save slot selected");
+        }
+    }
+
+    // Delete all saves (called by pressing the 'End' key)
+    private void DeleteAllSaves()
+    {
+        for (int i = 0; i < saveSlotNames.Length; i++)
+        {
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_Name");
+            Debug.Log("Deleted save data from slot " + (i + 1));
+        }
+        PlayerPrefs.Save();
+        UpdateSaveSlotUI(); // Update UI to reflect changes
+    }
+
+    // Update the save slot UI
     void UpdateSaveSlotUI()
     {
         for (int i = 0; i < saveSlotNames.Length; i++)
         {
             string saveName = PlayerPrefs.GetString(saveSlotNames[i] + "_Name", "Empty");
             saveSlotTexts[i].text = saveName;
-            loadSlotTexts[i].text = saveName;
 
             Color buttonColor = saveName == "Empty" ? new Color(0.75f, 0.75f, 0.75f) : Color.white;
-            saveButtons[i].image.color = buttonColor;
-            loadButtons[i].image.color = buttonColor;
+            slotButtons[i].image.color = buttonColor;
+            slotButtons[i].interactable = true;
         }
     }
 
-    // Open het save-menu
-    public void OpenSavePanel()
+    // Spin the auto-save icon continuously at -180 degrees per second
+    private IEnumerator SpinAutoSaveIcon()
     {
-        savePanel.SetActive(true);
-        loadPanel.SetActive(false);
-        saveButton.gameObject.SetActive(false);
-        loadButton.gameObject.SetActive(false);
-        currentLoadedSlotText.gameObject.SetActive(true);
-        Debug.Log("Opened Save Panel");
+        while (autoSaveIcon.activeSelf)  // Keep spinning while the icon is active
+        {
+            autoSaveIcon.transform.Rotate(0, 0, -180 * Time.deltaTime);  // Rotate the icon by -180 degrees per second
+            yield return null;
+        }
     }
 
-    // Open het load-menu
-    public void OpenLoadPanel()
+    // Hide the auto-save UI after the save completes
+    private IEnumerator HideAutoSaveUI()
     {
-        loadPanel.SetActive(true);
-        savePanel.SetActive(false);
-        saveButton.gameObject.SetActive(false);
-        loadButton.gameObject.SetActive(false);
-        currentLoadedSlotText.gameObject.SetActive(true);
-        Debug.Log("Opened Load Panel");
+        yield return new WaitForSeconds(2f);  // Wait for 4 seconds to simulate saving time
+
+        // Reset the auto-save UI after the save completes
+        autoSaveIcon.SetActive(false);
+        autoSaveText.text = "";  // Remove "Saving..." text after the save
     }
 
-    // Sluit de save/load panelen
-    public void ClosePanels()
-    {
-        savePanel.SetActive(false);
-        loadPanel.SetActive(false);
-        saveButton.gameObject.SetActive(true);
-        loadButton.gameObject.SetActive(true);
-        currentLoadedSlotText.gameObject.SetActive(false);
-        Debug.Log("Closed Save/Load Panels");
-    }
-
-    // Sluit de gehele save/load UI
+    // Close the save/load canvas
     public void CloseSaveLoadCanvas()
     {
-        if (saveLoadCanvas != null)
-        {
-            saveLoadCanvas.SetActive(false);
-            Debug.Log("Save/Load UI closed");
-        }
+        saveLoadCanvas.enabled = false;
     }
 }
