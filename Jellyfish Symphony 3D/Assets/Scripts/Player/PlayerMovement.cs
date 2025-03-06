@@ -37,7 +37,6 @@ public class PlayerMovement : MonoBehaviour
 
 		characterController = GetComponent<CharacterController>();
 		
-		// Assign the main camera if it's not assigned
 		if (playerCamera == null)
 		{
 			playerCamera = Camera.main;
@@ -45,11 +44,10 @@ public class PlayerMovement : MonoBehaviour
 			if (playerCamera == null) return;
 		}
 
-		// Set the camera's parent to the player object, if not already done in the Inspector
 		if (playerCamera.transform.parent != transform)
 		{
 			playerCamera.transform.SetParent(transform);
-			playerCamera.transform.localPosition = new Vector3(0, cameraYOffset, 0); // Adjust if necessary
+			playerCamera.transform.localPosition = new Vector3(0, cameraYOffset, 0);
 		}
 
 		currentSpeed = speed;
