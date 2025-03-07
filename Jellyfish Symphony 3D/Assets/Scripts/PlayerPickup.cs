@@ -4,10 +4,8 @@ using TMPro;
 public class PlayerPickup : MonoBehaviour
 {
     public Camera playerCamera;
-    public float raycastDistance;
+    public float raycastDistance = 5f;
     public LayerMask pickupLayer;
-
-    public TextMeshProUGUI pickupPromptText;
 
     private ItemPickup currentItem;
 
@@ -30,28 +28,25 @@ public class PlayerPickup : MonoBehaviour
                 if (itemPickup != null)
                 {
                     currentItem = itemPickup;
-                    ShowPickupPrompt(true);
+                    currentItem.ShowPickupPrompt(true);
                 }
             }
             else
             {
-                ShowPickupPrompt(false);
-                currentItem = null;
+                if (currentItem != null)
+                {
+                    currentItem.ShowPickupPrompt(false);
+                    currentItem = null;
+                }
             }
         }
         else
         {
-            ShowPickupPrompt(false);
-            currentItem = null;
-        }
-    }
-
-    void ShowPickupPrompt(bool show)
-    {
-        if (pickupPromptText != null)
-        {
-            pickupPromptText.gameObject.SetActive(show);
-            pickupPromptText.text = show ? "Press E to pick up" : "";
+            if (currentItem != null)
+            {
+                currentItem.ShowPickupPrompt(false);
+                currentItem = null;
+            }
         }
     }
 
@@ -64,7 +59,7 @@ public class PlayerPickup : MonoBehaviour
             if (added)
             {
                 Destroy(currentItem.gameObject);
-                ShowPickupPrompt(false);
+                currentItem.ShowPickupPrompt(false);
                 currentItem = null;
             }
         }

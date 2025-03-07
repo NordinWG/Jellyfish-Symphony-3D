@@ -20,7 +20,6 @@ public class PlayerMovement : MonoBehaviour
 	public Canvas saveLoad;
 	public Canvas inventory;
 	public Camera playerCamera;
-	private CharacterController characterController;
 
 	[Header("Canvas")]
 
@@ -34,8 +33,6 @@ public class PlayerMovement : MonoBehaviour
 
 		speed = 4;
 		sprintSpeed = 25;
-
-		characterController = GetComponent<CharacterController>();
 		
 		if (playerCamera == null)
 		{
@@ -55,7 +52,6 @@ public class PlayerMovement : MonoBehaviour
 
 	void Update()
 	{
-		print(mainmenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled);
 
 		if (playerCamera != null && !playerCamera.gameObject.activeInHierarchy)
 		{
@@ -79,20 +75,20 @@ public class PlayerMovement : MonoBehaviour
 	{
 		if (!canMove) return;
 
-		hor = Input.GetAxis("Horizontal");
-		ver = Input.GetAxis("Vertical");
+    	hor = Input.GetAxis("Horizontal");
+    	ver = Input.GetAxis("Vertical");
 
-		currentSpeed = Input.GetKey(KeyCode.LeftControl) ? sprintSpeed : speed;
+    	currentSpeed = Input.GetKey(KeyCode.LeftControl) ? sprintSpeed : speed;
 
-		Vector3 forward = transform.TransformDirection(Vector3.forward);
-		Vector3 right = transform.TransformDirection(Vector3.right);
-		float curSpeedX = currentSpeed * ver;
-		float curSpeedY = currentSpeed * hor;
-		float movementDirectionY = moveDirection.y;
+    	Vector3 forward = transform.TransformDirection(Vector3.forward);
+    	Vector3 right = transform.TransformDirection(Vector3.right);
 
-		moveDirection = (forward * curSpeedX) + (right * curSpeedY);
+    	float moveX = currentSpeed * hor;
+    	float moveZ = currentSpeed * ver;
 
-		characterController.Move(moveDirection * Time.deltaTime);
+    	Vector3 moveDirection = (forward * moveZ) + (right * moveX);
+	
+    	transform.Translate(moveDirection * Time.deltaTime, Space.World);
 	}
 
 	void RotatePlayer()

@@ -28,20 +28,26 @@ public class OpenMenus : MonoBehaviour
     }
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !pausemenu.enabled && !mainmenu.enabled && !inventory.enabled && !saveLoad.enabled)
+        if (Input.GetKeyDown(KeyCode.Escape) && !mainmenu.enabled && !saveLoad.enabled && !inventory.enabled)
         {
             if (!pausemenu.enabled)
             {
                 PauseGame();
-                Cursor.visible = true;
-                Cursor.lockState = CursorLockMode.None;
             }
             else
             {
                 ResumeGame();
-                Cursor.visible = false;
-                Cursor.lockState = CursorLockMode.Locked;
             }
+        }
+        if(pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled)
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else
+        {
+            Cursor.visible = false;
+            Cursor.lockState = CursorLockMode.Locked;
         }
 
         if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled)
