@@ -78,8 +78,6 @@ public class PlayerMovement : MonoBehaviour
     	hor = Input.GetAxis("Horizontal");
     	ver = Input.GetAxis("Vertical");
 
-    	currentSpeed = Input.GetKey(KeyCode.LeftControl) ? sprintSpeed : speed;
-
     	Vector3 forward = transform.TransformDirection(Vector3.forward);
     	Vector3 right = transform.TransformDirection(Vector3.right);
 
