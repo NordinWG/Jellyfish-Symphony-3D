@@ -2,105 +2,62 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-	[Header("Base setup")]
-	public int speed = 4;
-	public int sprintSpeed = 25;
-	public float jumpSpeed = 8.0f;
-	public float gravity = 20.0f;
-	public float mouseSensitivity = 1500f;
-	public float controllerSensitivity = 1500f;
-	private int currentSpeed;
-	private float rotationX = 0f;
-	private float rotationY = 0f;
-	private Vector3 moveDirection = Vector3.zero;
-	public float hor;
-	public float ver;
-	public Canvas mainmenu;
-	public Canvas pauseMenu;
-	public Canvas saveLoad;
-	public Canvas inventory;
-	public Camera playerCamera;
+    [Header("Movement Settings")]
+    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float sprintMultiplier = 1.5f;
+    [SerializeField] private float rotationSpeed = 10f;
 
-	[Header("Canvas")]
+    [Header("References")]
+    [SerializeField] private Transform cameraTransform;
 
+    [Header("Canvas References")]
+    [SerializeField] private Canvas mainMenu;
+    [SerializeField] private Canvas pauseMenu;
+    [SerializeField] private Canvas saveLoad;
+    [SerializeField] private Canvas inventory;
 
-	[SerializeField]
-	private float cameraYOffset = 0.4f;
-	public bool canMove;
+    private Vector3 moveDirection;
+    private bool canMove;
 
-	void Start()
-	{
-
-		speed = 4;
-		sprintSpeed = 25;
-		
-		if (playerCamera == null)
-		{
-			playerCamera = Camera.main;
-
-			if (playerCamera == null) return;
-		}
-
-		if (playerCamera.transform.parent != transform)
-		{
-			playerCamera.transform.SetParent(transform);
-			playerCamera.transform.localPosition = new Vector3(0, cameraYOffset, 0);
-		}
-
-		currentSpeed = speed;
-	}
-
-	void Update()
-	{
-
-		if (playerCamera != null && !playerCamera.gameObject.activeInHierarchy)
-		{
-			playerCamera.gameObject.SetActive(true);
-		}
-
-        if(mainmenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled)
-		{
-			canMove = false;
-		}
-		if(!mainmenu.enabled && !pauseMenu.enabled && !saveLoad.enabled && !inventory.enabled)
-		{
-			canMove = true;
-		}
-        
-		Movement();
-		RotatePlayer();
-	}
-
-	void Movement()
-	{
-		if (!canMove) return;
-
-    	hor = Input.GetAxis("Horizontal");
-    	ver = Input.GetAxis("Vertical");
-
-    	Vector3 forward = transform.TransformDirection(Vector3.forward);
-    	Vector3 right = transform.TransformDirection(Vector3.right);
-
-    	float moveX = currentSpeed * hor;
-    	float moveZ = currentSpeed * ver;
-
-    	Vector3 moveDirection = (forward * moveZ) + (right * moveX);
-	
-    	transform.Translate(moveDirection * Time.deltaTime, Space.World);
-	}
-
-	void RotatePlayer()
+    private void Update()
     {
+        UpdateCanMove();
         if (!canMove) return;
 
-        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
-        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+        HandleMovement();
+        HandleRotation();
+    }
 
-        rotationX -= mouseY;
-        rotationX = Mathf.Clamp(rotationX, -90f, 90f);
-        rotationY += mouseX;
+    private void UpdateCanMove()
+    {
+        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled);
+    }
 
-        playerCamera.transform.localRotation = Quaternion.Euler(rotationX, 0, 0);
-		transform.localRotation = Quaternion.Euler(0, rotationY, 0);
+    private void HandleMovement()
+    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        Vector3 cameraForward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up).normalized;
+        Vector3 cameraRight = Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized;
+
+        moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
+        
+        float currentSpeed = moveSpeed;
+        if (Input.GetKey(KeyCode.LeftShift) && vertical > 0)
+        {
+            currentSpeed *= sprintMultiplier;
+        }
+
+        transform.Translate(moveDirection * currentSpeed * Time.deltaTime, Space.World);
+    }
+
+    private void HandleRotation()
+    {
+        if (moveDirection != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
     }
 }

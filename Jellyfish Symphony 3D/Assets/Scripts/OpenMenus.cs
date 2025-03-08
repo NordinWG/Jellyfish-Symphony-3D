@@ -15,6 +15,7 @@ public class OpenMenus : MonoBehaviour
     public Canvas inventory;
     public GameObject itemDescription;
     public InventoryUI inventoryUI;
+    public Canvas onscreenUI;
 
 
     [Header("Quit Buttons")]
@@ -39,15 +40,17 @@ public class OpenMenus : MonoBehaviour
                 ResumeGame();
             }
         }
-        if(pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled)
+        if (pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
+            onscreenUI.enabled = false;
         }
         else
         {
             Cursor.visible = false;
             Cursor.lockState = CursorLockMode.Locked;
+            onscreenUI.enabled = true;
         }
 
         if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled)
