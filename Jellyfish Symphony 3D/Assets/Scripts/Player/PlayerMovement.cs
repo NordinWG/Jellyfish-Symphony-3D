@@ -3,18 +3,19 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
-    [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float sprintMultiplier = 1.5f;
-    [SerializeField] private float rotationSpeed = 10f;
+    public float moveSpeed;
+    public float sprintMultiplier;
+    public float rotationSpeed;
 
     [Header("References")]
-    [SerializeField] private Transform cameraTransform;
+    public Transform cameraTransform;
 
     [Header("Canvas References")]
-    [SerializeField] private Canvas mainMenu;
-    [SerializeField] private Canvas pauseMenu;
-    [SerializeField] private Canvas saveLoad;
-    [SerializeField] private Canvas inventory;
+    public Canvas mainMenu;
+    public Canvas pauseMenu;
+    public Canvas saveLoad;
+    public Canvas inventory;
+    public Canvas endCutscene;
 
     private Vector3 moveDirection;
     private bool canMove;
@@ -30,7 +31,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void UpdateCanMove()
     {
-        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled);
+        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled);
     }
 
     private void HandleMovement()

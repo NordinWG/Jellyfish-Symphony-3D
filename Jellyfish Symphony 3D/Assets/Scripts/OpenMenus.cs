@@ -13,6 +13,7 @@ public class OpenMenus : MonoBehaviour
     public Canvas pausemenu;
     public Canvas saveLoad;
     public Canvas inventory;
+    public Canvas endCutscene;
     public GameObject itemDescription;
     public InventoryUI inventoryUI;
     public Canvas onscreenUI;
@@ -29,7 +30,7 @@ public class OpenMenus : MonoBehaviour
     }
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Escape) && !mainmenu.enabled && !saveLoad.enabled && !inventory.enabled)
+        if (Input.GetKeyDown(KeyCode.Escape) && !mainmenu.enabled && !saveLoad.enabled && !inventory.enabled && !endCutscene.enabled)
         {
             if (!pausemenu.enabled)
             {
@@ -40,7 +41,7 @@ public class OpenMenus : MonoBehaviour
                 ResumeGame();
             }
         }
-        if (pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled)
+        if (pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled)
         {
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
@@ -53,7 +54,7 @@ public class OpenMenus : MonoBehaviour
             onscreenUI.enabled = true;
         }
 
-        if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled)
+        if (Input.GetKeyDown(KeyCode.I) && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled && !endCutscene.enabled)
         {
             bool isInventoryOpen = inventory.enabled;
 

@@ -4,9 +4,9 @@ using TMPro;
 public class PlayerPickup : MonoBehaviour
 {
     public Camera playerCamera;
-    public float raycastDistance = 5f;
+    public float raycastDistance;
     public LayerMask pickupLayer;
-
+    public LayerMask wandPickupLayer;
     private ItemPickup currentItem;
 
     void Update()
@@ -20,7 +20,7 @@ public class PlayerPickup : MonoBehaviour
         RaycastHit hit;
         Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
 
-        if (Physics.Raycast(ray, out hit, raycastDistance, pickupLayer))
+        if (Physics.Raycast(ray, out hit, raycastDistance, pickupLayer | wandPickupLayer))
         {
             if (hit.collider.CompareTag("Item"))
             {

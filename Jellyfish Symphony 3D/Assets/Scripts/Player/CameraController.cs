@@ -3,25 +3,26 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     [Header("Camera Settings")]
-    [SerializeField] private float sensitivityX;
-    [SerializeField] private float sensitivityY;
-    [SerializeField] private float minYAngle;
-    [SerializeField] private float maxYAngle;
-    [SerializeField] private float distanceFromTarget;
+    public float sensitivityX;
+    public float sensitivityY;
+    public float minYAngle;
+    public float maxYAngle;
+    public float distanceFromTarget;
 
     [Header("Collision Settings")]
-    [SerializeField] private LayerMask collisionLayers;
-    [SerializeField] private float collisionOffset;
-    [SerializeField] private float minDistanceFromTarget;
+    public LayerMask collisionLayers;
+    public float collisionOffset;
+    public float minDistanceFromTarget;
 
     [Header("Canvas References")]
-    [SerializeField] private Canvas mainMenu;
-    [SerializeField] private Canvas pauseMenu;
-    [SerializeField] private Canvas saveLoad;
-    [SerializeField] private Canvas inventory;
+    public Canvas mainMenu;
+    public Canvas pauseMenu;
+    public Canvas saveLoad;
+    public Canvas inventory;
+    public Canvas endCutscene;
 
     [Header("References")]
-    [SerializeField] private Transform target;
+    public Transform target;
 
     private bool canMove;
     private float currentX;
@@ -45,7 +46,7 @@ public class CameraController : MonoBehaviour
 
     private void UpdateCanMove()
     {
-        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled);
+        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled);
     }
 
     private void LateUpdate()
@@ -67,7 +68,7 @@ public class CameraController : MonoBehaviour
         Vector3 adjustedPosition = AdjustForCollisions(target.position, desiredPosition, direction);
 
         transform.position = instant ? adjustedPosition : adjustedPosition;
-        transform.LookAt(target.position + Vector3.up * 0.5f);
+        transform.LookAt(target.position + Vector3.up * 1.5f);
     }
 
     private Vector3 AdjustForCollisions(Vector3 start, Vector3 desired, Vector3 direction)
