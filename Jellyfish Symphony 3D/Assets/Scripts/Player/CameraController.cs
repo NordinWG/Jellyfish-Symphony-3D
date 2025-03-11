@@ -68,7 +68,7 @@ public class CameraController : MonoBehaviour
         Vector3 adjustedPosition = AdjustForCollisions(target.position, desiredPosition, direction);
 
         transform.position = instant ? adjustedPosition : adjustedPosition;
-        transform.LookAt(target.position + Vector3.up * 1.5f);
+        transform.LookAt(target.position + Vector3.up * 1f);
     }
 
     private Vector3 AdjustForCollisions(Vector3 start, Vector3 desired, Vector3 direction)

@@ -3,49 +3,38 @@ using TMPro;
 
 public class PlayerPickup : MonoBehaviour
 {
-    public Camera playerCamera;
-    public float raycastDistance;
+    public float pickupSphereRadius;
     public LayerMask pickupLayer;
     public LayerMask wandPickupLayer;
     private ItemPickup currentItem;
 
     void Update()
     {
-        HandleItemRaycast();
+        HandleItemDetection();
         HandleItemPickup();
     }
 
-    void HandleItemRaycast()
+    void HandleItemDetection()
     {
-        RaycastHit hit;
-        Ray ray = playerCamera.ScreenPointToRay(Input.mousePosition);
-
-        if (Physics.Raycast(ray, out hit, raycastDistance, pickupLayer | wandPickupLayer))
+        if (currentItem != null)
         {
-            if (hit.collider.CompareTag("Item"))
+            currentItem.ShowPickupPrompt(false);
+            currentItem = null;
+        }
+
+        Collider[] hits = Physics.OverlapSphere(transform.position, pickupSphereRadius, pickupLayer | wandPickupLayer);
+        
+        foreach (Collider hit in hits)
+        {
+            if (hit.CompareTag("Item"))
             {
-                ItemPickup itemPickup = hit.collider.GetComponent<ItemPickup>();
+                ItemPickup itemPickup = hit.GetComponent<ItemPickup>();
                 if (itemPickup != null)
                 {
                     currentItem = itemPickup;
                     currentItem.ShowPickupPrompt(true);
+                    break;
                 }
-            }
-            else
-            {
-                if (currentItem != null)
-                {
-                    currentItem.ShowPickupPrompt(false);
-                    currentItem = null;
-                }
-            }
-        }
-        else
-        {
-            if (currentItem != null)
-            {
-                currentItem.ShowPickupPrompt(false);
-                currentItem = null;
             }
         }
     }
@@ -63,5 +52,11 @@ public class PlayerPickup : MonoBehaviour
                 currentItem = null;
             }
         }
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(transform.position, pickupSphereRadius);
     }
 }
