@@ -4,7 +4,6 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement Settings")]
     public float moveSpeed;
-    public float sprintMultiplier;
     public float rotationSpeed;
 
     [Header("References")]
@@ -45,10 +44,6 @@ public class PlayerMovement : MonoBehaviour
         moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
         
         float currentSpeed = moveSpeed;
-        if (Input.GetKey(KeyCode.LeftShift) && vertical > 0)
-        {
-            currentSpeed *= sprintMultiplier;
-        }
 
         transform.Translate(moveDirection * currentSpeed * Time.deltaTime, Space.World);
     }
