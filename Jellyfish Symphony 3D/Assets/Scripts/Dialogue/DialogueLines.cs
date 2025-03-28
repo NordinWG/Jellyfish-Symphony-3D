@@ -1,38 +1,66 @@
 using UnityEngine;
+using System.Collections;
 
 public class DialogueLines : MonoBehaviour
 {
+    [Header("NPC Settings")]
+    public string npcName;
+    [TextArea(3, 10)]
+    public string[] dialogueLines;
+    public float interactionRange = 2f;
+    public AudioClip npcVoice;
+
+    [Header("References")]
     public DialogueManager dialogueManager;
+
+    private Transform player;
+    private bool isPlayerInRange;
+    public bool IsDialogueActive { get; private set; }
 
     void Start()
     {
-        dialogueManager.DialogueLines = new[]
-        {
-            new[]
-            {
-                ("Sander", "Listen, I NEED that drownie. Like, *DESPERATELY* need it."),
-                ("Sander", "I woke up today, and the FIRST thing on my mind? That DAMN drownie."),
-                ("Sander", "Not just any drownie—the *WEED drownie*. The one I’ve been DREAMING about."),
-                ("Sander", "I can already taste it. That SOFT, CHOCOLATEY perfection. I NEED it NOW."),
-                ("Sander", "ONE bite. That’s all I’m asking. Just ONE, and I’ll be at peace."),
-                ("Sander", "Everything would be *BETTER* with that drownie. WHY is that so hard to understand?"),
-                ("Sander", "Every second without it is DRIVING me INSANE. Do you GET it?"),
-                ("Sander", "You’ve got it, DON’T you? I can feel it. YOU have the power to make this RIGHT."),
-                ("Sander", "I’m not asking for MUCH here. I’m not being DRAMATIC. I just NEED that drownie."),
-                ("Sander", "PLEASE. I’m losing my MIND. Hand it over before I lose it COMPLETELY."),
-                ("Alira", "What do you mean..?"),
-                ("Sander", "I NEED that drownie. That MAGICAL DROWNIE. get IT to me or I will never be able to rest, EVER."),
-                ("Alira", "O-okay..? I will bring you the drownie..."),
-                ("[HIDE]", "")
-            }
-        };
+        player = GameObject.FindGameObjectWithTag("Player")?.transform;
+        if (!player) Debug.LogError("Player not found! Make sure it has 'Player' tag.");
+        if (!dialogueManager) Debug.LogError("DialogueManager not assigned!");
+        IsDialogueActive = false;
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.T))
+        if (player != null)
         {
-            dialogueManager.StartDialogue(dialogueManager.DialogueLines[0]);
+            float distance = Vector3.Distance(transform.position, player.position);
+            isPlayerInRange = distance <= interactionRange;
+
+            if (isPlayerInRange && Input.GetKeyDown(KeyCode.T) && !IsDialogueActive)
+            {
+                StartDialogue();
+            }
         }
+    }
+
+    void StartDialogue()
+    {
+        if (dialogueLines.Length == 0) return;
+
+        (string speaker, string dialogue)[] lines = new (string, string)[dialogueLines.Length];
+        for (int i = 0; i < dialogueLines.Length; i++)
+        {
+            lines[i] = (npcName, dialogueLines[i]);
+        }
+
+        dialogueManager.StartDialogue(lines, npcVoice, this);
+        IsDialogueActive = true;
+    }
+
+    public void EndDialogue()
+    {
+        IsDialogueActive = false;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, interactionRange);
     }
 }

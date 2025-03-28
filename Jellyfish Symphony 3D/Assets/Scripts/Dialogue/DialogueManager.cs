@@ -9,19 +9,18 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI speakerText;
     public Image arrowImage;
-    public float typingSpeed;
-    public float spaceCooldown;
+    public float typingSpeed = 0.05f;
+    public float spaceCooldown = 0.2f;
 
     public AudioSource audioSource;
     public AudioClip defaultVoice;
-    public AudioClip sanderVoice;
-    public AudioClip aliraVoice;
 
-    public (string speaker, string dialogue)[][] DialogueLines;
     private Queue<(string speaker, string dialogue)> dialogueQueue = new Queue<(string speaker, string dialogue)>();
     private bool isTyping;
     private bool canAdvance;
     private float defaultTypingSpeed;
+    private float lastSpaceTime;
+    private DialogueLines currentNPC;
 
     public GameObject dialogueCanvas;
 
@@ -32,7 +31,7 @@ public class DialogueManager : MonoBehaviour
         dialogueCanvas?.SetActive(false);
     }
 
-    public void StartDialogue((string speaker, string dialogue)[] lines)
+    public void StartDialogue((string speaker, string dialogue)[] lines, AudioClip npcVoice, DialogueLines npc)
     {
         if (lines == null || lines.Length == 0) return;
 
@@ -40,6 +39,8 @@ public class DialogueManager : MonoBehaviour
         foreach (var line in lines) dialogueQueue.Enqueue(line);
 
         dialogueCanvas?.SetActive(true);
+        audioSource.clip = npcVoice != null ? npcVoice : defaultVoice;
+        currentNPC = npc;
         NextLine();
     }
 
@@ -60,6 +61,11 @@ public class DialogueManager : MonoBehaviour
         if (dialogueQueue.Count == 0)
         {
             dialogueCanvas?.SetActive(false);
+            if (currentNPC != null)
+            {
+                currentNPC.EndDialogue();
+                currentNPC = null;
+            }
             return;
         }
 
@@ -72,17 +78,11 @@ public class DialogueManager : MonoBehaviour
         dialogueText.text = "";
         speakerText.text = line.speaker;
 
-        if (line.speaker == "[HIDE]")
+        if (audioSource.clip != null && !audioSource.isPlaying)
         {
-            dialogueCanvas?.SetActive(false);
-            yield return new WaitForSeconds(0.5f);
-            isTyping = false;
-            canAdvance = true;
-            arrowImage?.gameObject.SetActive(true);
-            yield break;
+            audioSource.loop = true;
+            audioSource.Play();
         }
-
-        PlayVoice(line.speaker);
 
         foreach (char letter in line.dialogue)
         {
@@ -98,30 +98,13 @@ public class DialogueManager : MonoBehaviour
         typingSpeed = defaultTypingSpeed;
     }
 
-    void PlayVoice(string speaker)
-    {
-        if (audioSource.isPlaying) return;
-
-        audioSource.clip = speaker switch
-        {
-            "Sander" when sanderVoice != null => sanderVoice,
-            "Alira" when aliraVoice != null => aliraVoice,
-            _ => defaultVoice
-        };
-
-        if (audioSource.clip != null)
-        {
-            audioSource.loop = true;
-            audioSource.Play();
-        }
-    }
-
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space) && Time.time >= spaceCooldown && (canAdvance || !isTyping))
+        if (Input.GetKeyDown(KeyCode.Space) && Time.time >= lastSpaceTime + spaceCooldown && (canAdvance || !isTyping))
         {
             canAdvance = false;
             arrowImage?.gameObject.SetActive(false);
+            lastSpaceTime = Time.time;
             NextLine();
         }
     }
