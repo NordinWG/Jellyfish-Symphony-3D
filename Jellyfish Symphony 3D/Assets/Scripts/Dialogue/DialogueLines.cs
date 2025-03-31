@@ -12,6 +12,7 @@ public class DialogueLines : MonoBehaviour
 
     [Header("References")]
     public DialogueManager dialogueManager;
+    public PlayerMovement PlayerMovement;
 
     private Transform player;
     private bool isPlayerInRange;
@@ -43,6 +44,8 @@ public class DialogueLines : MonoBehaviour
     {
         if (dialogueLines.Length == 0) return;
 
+        PlayerMovement.enabled = false;
+
         (string speaker, string dialogue)[] lines = new (string, string)[dialogueLines.Length];
         for (int i = 0; i < dialogueLines.Length; i++)
         {
@@ -56,6 +59,7 @@ public class DialogueLines : MonoBehaviour
     public void EndDialogue()
     {
         IsDialogueActive = false;
+        PlayerMovement.enabled = true;
     }
 
     void OnDrawGizmosSelected()
