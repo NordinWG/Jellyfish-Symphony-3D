@@ -21,8 +21,6 @@ public class DialogueLines : MonoBehaviour
     void Start()
     {
         player = GameObject.FindGameObjectWithTag("Player")?.transform;
-        if (!player) Debug.LogError("Player not found! Make sure it has 'Player' tag.");
-        if (!dialogueManager) Debug.LogError("DialogueManager not assigned!");
         IsDialogueActive = false;
     }
 

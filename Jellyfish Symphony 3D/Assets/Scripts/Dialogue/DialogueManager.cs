@@ -9,8 +9,8 @@ public class DialogueManager : MonoBehaviour
     public TextMeshProUGUI dialogueText;
     public TextMeshProUGUI speakerText;
     public Image arrowImage;
-    public float typingSpeed = 0.05f;
-    public float spaceCooldown = 0.2f;
+    public float typingSpeed;
+    public float spaceCooldown;
 
     public AudioSource audioSource;
     public AudioClip defaultVoice;
