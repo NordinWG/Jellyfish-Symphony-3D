@@ -8,6 +8,7 @@ public class CameraController : MonoBehaviour
     public float minYAngle;
     public float maxYAngle;
     public float distanceFromTarget;
+    public float smoothSpeed;
 
     [Header("Collision Settings")]
     public LayerMask collisionLayers;
@@ -27,15 +28,15 @@ public class CameraController : MonoBehaviour
     private bool canMove;
     private float currentX;
     private float currentY;
+    private Vector3 velocity;
 
     private void Start()
     {
         if (!target)
         {
-            target = GameObject.FindGameObjectWithTag("Player").transform;
+            target = GameObject.FindGameObjectWithTag("Player")?.transform;
         }
         Cursor.lockState = CursorLockMode.Locked;
-
         UpdateCameraPosition(true);
     }
 
@@ -46,7 +47,8 @@ public class CameraController : MonoBehaviour
 
     private void UpdateCanMove()
     {
-        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled);
+        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || 
+                   inventory.enabled || endCutscene.enabled);
     }
 
     private void LateUpdate()
@@ -66,8 +68,16 @@ public class CameraController : MonoBehaviour
         Vector3 direction = rotation * -Vector3.forward;
         Vector3 desiredPosition = target.position + direction * distanceFromTarget;
         Vector3 adjustedPosition = AdjustForCollisions(target.position, desiredPosition, direction);
-
-        transform.position = instant ? adjustedPosition : adjustedPosition;
+        
+        if (instant)
+        {
+            transform.position = adjustedPosition;
+        }
+        else
+        {
+            transform.position = Vector3.SmoothDamp(transform.position, adjustedPosition, ref velocity, smoothSpeed * Time.deltaTime);
+        }
+        
         transform.LookAt(target.position + Vector3.up * 1f);
     }
 
