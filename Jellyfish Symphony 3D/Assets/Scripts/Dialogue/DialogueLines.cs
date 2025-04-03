@@ -7,7 +7,7 @@ public class DialogueLines : MonoBehaviour
     public string npcName;
     [TextArea(3, 10)]
     public string[] dialogueLines;
-    public float interactionRange = 2f;
+    public float interactionRange;
     public AudioClip npcVoice;
 
     [Header("References")]
