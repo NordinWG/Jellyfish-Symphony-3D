@@ -4,17 +4,16 @@ using UnityEngine;
 public class Inventory : MonoBehaviour
 {
     public static Inventory instance;
+    private static GameObject inventoryObject;
 
-    private void Awake()
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void InitializeStaticFields()
     {
-
         if (instance == null)
         {
-            instance = this;
-        }
-        else
-        {
-            Destroy(gameObject);
+            inventoryObject = new GameObject("InventoryManager");
+            instance = inventoryObject.AddComponent<Inventory>();
+            DontDestroyOnLoad(inventoryObject);
         }
     }
 
@@ -39,6 +38,7 @@ public class Inventory : MonoBehaviour
                 {
                     slot.quantity = Mathf.Min(slot.quantity + quantity, item.maxStack);
                     onInventoryChangedCallback?.Invoke();
+                    Debug.Log($"Stacked {quantity} of {item.itemName} in existing slot");
                     return true;
                 }
             }
@@ -48,9 +48,11 @@ public class Inventory : MonoBehaviour
         {
             inventorySlots.Add(new InventorySlot(item, quantity));
             onInventoryChangedCallback?.Invoke();
+            Debug.Log($"Added new slot with {quantity} of {item.itemName}");
             return true;
         }
 
+        Debug.LogWarning("Inventory full, cannot add " + item.itemName);
         return false;
     }
 

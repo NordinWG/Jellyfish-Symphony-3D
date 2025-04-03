@@ -7,6 +7,12 @@ public class PlayerPickup : MonoBehaviour
     public LayerMask pickupLayer;
     public LayerMask wandPickupLayer;
     private ItemPickup currentItem;
+    private PlayerMovement playerMovement;
+
+    void Start()
+    {
+        playerMovement = GetComponent<PlayerMovement>();
+    }
 
     void Update()
     {
@@ -23,7 +29,7 @@ public class PlayerPickup : MonoBehaviour
         }
 
         Collider[] hits = Physics.OverlapSphere(transform.position, pickupSphereRadius, pickupLayer | wandPickupLayer);
-        
+
         foreach (Collider hit in hits)
         {
             if (hit.CompareTag("Item"))
@@ -44,12 +50,16 @@ public class PlayerPickup : MonoBehaviour
         if (currentItem != null && Input.GetKeyDown(KeyCode.E))
         {
             bool added = Inventory.instance.AddItem(currentItem.item, currentItem.quantity);
-
             if (added)
             {
+                playerMovement.animator.SetTrigger("grab");
                 Destroy(currentItem.gameObject);
                 currentItem.ShowPickupPrompt(false);
                 currentItem = null;
+            }
+            else
+            {
+                Debug.LogWarning("Failed to add item to inventory: " + currentItem.item.itemName);
             }
         }
     }

@@ -10,6 +10,7 @@ public class InventoryUI : MonoBehaviour
     public GameObject slotPrefab;
     public TextMeshProUGUI itemDescriptionText;
     public Image itemDisplayIcon;
+    public TMP_FontAsset customFont;
 
     private List<GameObject> slots = new List<GameObject>();
 
@@ -54,14 +55,21 @@ public class InventoryUI : MonoBehaviour
             if (slot.quantity > 1)
             {
                 quantityText.text = slot.quantity.ToString();
+                quantityText.fontSize = 30;
+                quantityText.color = Color.black;
+
+                if (customFont != null)
+                {
+                    quantityText.font = customFont; 
+                }
 
                 RectTransform quantityRect = quantityText.GetComponent<RectTransform>();
-                quantityRect.anchorMin = new Vector2(1, 1);
-                quantityRect.anchorMax = new Vector2(1, 1);
-                quantityRect.pivot = new Vector2(1, 1);
-                quantityRect.anchoredPosition = new Vector2(5, -10);
+                quantityRect.anchorMin = new Vector2(1, 0);
+                quantityRect.anchorMax = new Vector2(1, 0);
+                quantityRect.pivot = new Vector2(1, 0);
+                quantityRect.anchoredPosition = new Vector2(-5, 5);
 
-                quantityRect.sizeDelta = new Vector2(40, quantityRect.sizeDelta.y);
+                quantityRect.sizeDelta = new Vector2(50, quantityRect.sizeDelta.y);
             }
             else
             {

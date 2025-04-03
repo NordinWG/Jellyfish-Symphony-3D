@@ -20,6 +20,8 @@ public class PlayerMovement : MonoBehaviour
     private bool canMove;
     public Animator animator;
 
+    private bool isGamePaused = false;
+
     public void Start()
     {
         animator = GetComponent<Animator>();
@@ -28,7 +30,8 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         UpdateCanMove();
-        if (!canMove) return;
+
+        if (!canMove || isGamePaused) return;
 
         HandleMovement();
         HandleRotation();
@@ -48,13 +51,17 @@ public class PlayerMovement : MonoBehaviour
         Vector3 cameraRight = Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized;
 
         moveDirection = (cameraForward * vertical + cameraRight * horizontal).normalized;
-        
+
         float currentSpeed = moveSpeed;
 
         transform.Translate(moveDirection * currentSpeed * Time.deltaTime, Space.World);
 
-        float moveInput = Input.GetAxisRaw("Horizontal") + Input.GetAxisRaw("Vertical");
-        animator.SetFloat("speed", Mathf.Abs(moveInput));
+        float moveInput = moveDirection.magnitude;
+
+        if (!isGamePaused)
+        {
+            animator.SetFloat("speed", moveInput);
+        }
     }
 
     private void HandleRotation()
@@ -63,6 +70,16 @@ public class PlayerMovement : MonoBehaviour
         {
             Quaternion targetRotation = Quaternion.LookRotation(moveDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+    }
+
+    public void SetPauseState(bool isPaused)
+    {
+        isGamePaused = isPaused;
+
+        if (isGamePaused)
+        {
+            animator.SetFloat("speed", 0);
         }
     }
 }

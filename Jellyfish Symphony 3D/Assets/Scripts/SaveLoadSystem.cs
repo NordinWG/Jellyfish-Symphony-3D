@@ -6,8 +6,9 @@ using UnityEngine.UI;
 
 public class SaveLoadSystem : MonoBehaviour
 {
-    public enum InventoryItem { None, Drownie, Shell, Staff }
-    public List<InventoryItem> inventory = new List<InventoryItem>();
+    public PlayerMovement playerMovement;
+    public PlayerPickup playerPickup;
+    public List<GameObject> pickupItems;
 
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
 
@@ -22,7 +23,7 @@ public class SaveLoadSystem : MonoBehaviour
     private float autoSaveInterval = 300f;
     private float autoSaveTimer;
 
-    private int currentSlotIndex = -1;  // -1 indicates no slot selected yet
+    private int currentSlotIndex = -1;
 
     void Start()
     {
@@ -37,13 +38,11 @@ public class SaveLoadSystem : MonoBehaviour
     {
         autoSaveTimer -= Time.deltaTime;
 
-        // Trigger autosave on the 'S' key (if a game is loaded)
         if (Input.GetKeyDown(KeyCode.S) && currentSlotIndex != -1)
         {
             AutoSave();
         }
 
-        // Trigger delete all saves on the 'End' key
         if (Input.GetKeyDown(KeyCode.End))
         {
             DeleteAllSaves();
@@ -56,145 +55,175 @@ public class SaveLoadSystem : MonoBehaviour
         }
     }
 
-    // Open the save/load panel
     public void OpenSaveLoadPanel()
     {
         saveLoadCanvas.enabled = true;
         UpdateSaveSlotUI();
     }
 
-    // Select the save slot
     public void SelectSlot(int slotIndex)
     {
-        currentSlotIndex = slotIndex; // Set current slot index to the selected slot
+        currentSlotIndex = slotIndex;
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName == "Empty")
         {
-            SaveGame(slotIndex);  // Save if the slot is empty
+            SaveGame(slotIndex);
         }
         else
         {
-            LoadGame(slotIndex);  // Load the game if the slot is not empty
+            LoadGame(slotIndex);
         }
     }
 
-    // Load game from the selected slot
     public void LoadGame(int slotIndex)
     {
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName != "Empty")
         {
             currentSlotIndex = slotIndex;
+
+            float x = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerX");
+            float y = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerY");
+            float z = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerZ");
+            playerMovement.transform.position = new Vector3(x, y, z);
+
+            Inventory.instance.inventorySlots.Clear();
+            int slotCount = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_SlotCount", 0);
+            Debug.Log($"Loading {slotCount} inventory slots for slot {slotIndex}");
+            for (int i = 0; i < slotCount; i++)
+            {
+                string itemName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_ItemName" + i);
+                int quantity = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_ItemQty" + i);
+                Item item = Resources.Load<Item>("Items/" + itemName);
+                if (item != null)
+                {
+                    Inventory.instance.inventorySlots.Add(new InventorySlot(item, quantity));
+                    Debug.Log($"Loaded item: {itemName}, Quantity: {quantity}");
+                }
+                else
+                {
+                    Debug.LogWarning($"Failed to load item: {itemName} from Resources/Items/");
+                }
+            }
+            Inventory.instance.onInventoryChangedCallback?.Invoke();
+
+            for (int i = 0; i < pickupItems.Count; i++)
+            {
+                if (pickupItems[i] != null)
+                {
+                    bool isActive = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_Pickup" + i, 1) == 1;
+                    pickupItems[i].SetActive(isActive);
+                }
+            }
+
             Debug.Log("Game Loaded from slot " + (slotIndex + 1));
             CloseSaveLoadCanvas();
         }
-        else
-        {
-            Debug.Log("No game found in slot " + (slotIndex + 1));
-        }
     }
 
-    // Save game to the selected slot
     public void SaveGame(int slotIndex)
     {
         PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_Name", "World " + (slotIndex + 1));
+
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerX", playerMovement.transform.position.x);
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerY", playerMovement.transform.position.y);
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerZ", playerMovement.transform.position.z);
+
+        PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_SlotCount", Inventory.instance.inventorySlots.Count);
+        Debug.Log($"Saving {Inventory.instance.inventorySlots.Count} inventory slots for slot {slotIndex}");
+        for (int i = 0; i < Inventory.instance.inventorySlots.Count; i++)
+        {
+            string itemName = Inventory.instance.inventorySlots[i].item.itemName;
+            int quantity = Inventory.instance.inventorySlots[i].quantity;
+            PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_ItemName" + i, itemName);
+            PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_ItemQty" + i, quantity);
+            Debug.Log($"Saved item: {itemName}, Quantity: {quantity}");
+        }
+
+        for (int i = 0; i < pickupItems.Count; i++)
+        {
+            PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_Pickup" + i,
+                (pickupItems[i] != null && pickupItems[i].activeSelf) ? 1 : 0);
+        }
+
         PlayerPrefs.Save();
-        currentSlotIndex = slotIndex; // Save to the selected slot
+        currentSlotIndex = slotIndex;
         Debug.Log("Game Saved to slot " + (slotIndex + 1));
-        UpdateSaveSlotUI();
         CloseSaveLoadCanvas();
     }
 
-    // Autosave function
     private void AutoSave()
     {
         if (currentSlotIndex == -1) return;
 
-        // Show autosave UI elements (like the "Saving..." message)
         autoSaveIcon.SetActive(true);
         autoSaveText.text = "Autosaving...";
-
-        // Start spinning the auto-save icon continuously
         StartCoroutine(SpinAutoSaveIcon());
-
-        // Save the game to the current slot
         SaveGame(currentSlotIndex);
-
-        // Hide the "Saving..." UI after the save
         StartCoroutine(HideAutoSaveUI());
     }
 
-    // Triggered by manual save button in pause menu
     public void OnSaveButtonClicked()
     {
         if (currentSlotIndex != -1)
         {
-            // Show saving UI elements (like the "Saving..." message)
             autoSaveIcon.SetActive(true);
             autoSaveText.text = "Saving...";
-
-            // Start spinning the auto-save icon continuously
             StartCoroutine(SpinAutoSaveIcon());
-
-            // Save the game to the current slot
             SaveGame(currentSlotIndex);
-
-            // Hide the "Saving..." UI after the save
             StartCoroutine(HideAutoSaveUI());
-        }
-        else
-        {
-            Debug.LogWarning("No save slot selected");
         }
     }
 
-    // Delete all saves (called by pressing the 'End' key)
     private void DeleteAllSaves()
     {
         for (int i = 0; i < saveSlotNames.Length; i++)
         {
             PlayerPrefs.DeleteKey(saveSlotNames[i] + "_Name");
-            Debug.Log("Deleted save data from slot " + (i + 1));
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerX");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerY");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerZ");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_SlotCount");
+
+            for (int j = 0; j < 100; j++)
+            {
+                PlayerPrefs.DeleteKey(saveSlotNames[i] + "_ItemName" + j);
+                PlayerPrefs.DeleteKey(saveSlotNames[i] + "_ItemQty" + j);
+                PlayerPrefs.DeleteKey(saveSlotNames[i] + "_Pickup" + j);
+            }
         }
         PlayerPrefs.Save();
-        UpdateSaveSlotUI(); // Update UI to reflect changes
+        UpdateSaveSlotUI();
     }
 
-    // Update the save slot UI
     void UpdateSaveSlotUI()
     {
         for (int i = 0; i < saveSlotNames.Length; i++)
         {
             string saveName = PlayerPrefs.GetString(saveSlotNames[i] + "_Name", "Empty");
             saveSlotTexts[i].text = saveName;
-
             Color buttonColor = saveName == "Empty" ? new Color(0.75f, 0.75f, 0.75f) : Color.white;
             slotButtons[i].image.color = buttonColor;
             slotButtons[i].interactable = true;
         }
     }
 
-    // Spin the auto-save icon continuously at -180 degrees per second
     private IEnumerator SpinAutoSaveIcon()
     {
-        while (autoSaveIcon.activeSelf)  // Keep spinning while the icon is active
+        while (autoSaveIcon.activeSelf)
         {
-            autoSaveIcon.transform.Rotate(0, 0, -180 * Time.deltaTime);  // Rotate the icon by -180 degrees per second
+            autoSaveIcon.transform.Rotate(0, 0, -180 * Time.deltaTime);
             yield return null;
         }
     }
 
-    // Hide the auto-save UI after the save completes
     private IEnumerator HideAutoSaveUI()
     {
-        yield return new WaitForSeconds(2f);  // Wait for 4 seconds to simulate saving time
-
-        // Reset the auto-save UI after the save completes
+        yield return new WaitForSeconds(2f);
         autoSaveIcon.SetActive(false);
-        autoSaveText.text = "";  // Remove "Saving..." text after the save
+        autoSaveText.text = "";
     }
 
-    // Close the save/load canvas
     public void CloseSaveLoadCanvas()
     {
         saveLoadCanvas.enabled = false;

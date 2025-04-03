@@ -17,16 +17,17 @@ public class OpenMenus : MonoBehaviour
     public GameObject itemDescription;
     public InventoryUI inventoryUI;
 
-
-    [Header("Quit Buttons")]
     public Button MainMenuQUIT;
     public Button PauseMainMenuB;
+    public PlayerMovement playerMovement;
+
 
     void Start()
     {
         MainMenuQUIT.onClick.AddListener(QuitGame);
         PauseMainMenuB.onClick.AddListener(ResetGame);
     }
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.Escape) && !mainmenu.enabled && !saveLoad.enabled && !inventory.enabled && !endCutscene.enabled)
@@ -40,6 +41,7 @@ public class OpenMenus : MonoBehaviour
                 ResumeGame();
             }
         }
+
         if (pausemenu.enabled || mainmenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled)
         {
             Cursor.visible = true;
@@ -68,16 +70,29 @@ public class OpenMenus : MonoBehaviour
                 itemDescription.SetActive(false);
             }
         }
+
+        if (Input.GetKeyDown(KeyCode.Escape) && inventory.enabled && !pausemenu.enabled && !mainmenu.enabled && !saveLoad.enabled && !endCutscene.enabled)
+        {
+            inventory.enabled = false;
+            inventoryUI.ToggleInventory();
+            itemDescription.SetActive(false);
+        }
+
+        DisableButtonsForInactiveCanvases();
     }
 
     void PauseGame()
     {
         pausemenu.enabled = true;
+        Time.timeScale = 0;
+        playerMovement.SetPauseState(true);
     }
 
     void ResumeGame()
     {
         pausemenu.enabled = false;
+        Time.timeScale = 1;
+        playerMovement.SetPauseState(false);
     }
 
     void QuitGame()
@@ -89,5 +104,34 @@ public class OpenMenus : MonoBehaviour
     {
         Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    void DisableButtonsForInactiveCanvases()
+    {
+        DisableButtonsInCanvas(mainmenu);
+        DisableButtonsInCanvas(pausemenu);
+        DisableButtonsInCanvas(saveLoad);
+        DisableButtonsInCanvas(inventory);
+        DisableButtonsInCanvas(endCutscene);
+    }
+
+    void DisableButtonsInCanvas(Canvas canvas)
+    {
+        if (canvas != null && !canvas.enabled)
+        {
+            Button[] buttons = canvas.GetComponentsInChildren<Button>(true);
+            foreach (Button button in buttons)
+            {
+                button.interactable = false;
+            }
+        }
+        else if (canvas != null && canvas.enabled)
+        {
+            Button[] buttons = canvas.GetComponentsInChildren<Button>(true);
+            foreach (Button button in buttons)
+            {
+                button.interactable = true;
+            }
+        }
     }
 }

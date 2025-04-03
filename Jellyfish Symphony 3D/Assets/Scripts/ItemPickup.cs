@@ -22,6 +22,7 @@ public class ItemPickup : MonoBehaviour
             textPrompt.transform.rotation = Quaternion.LookRotation(textPrompt.transform.position - Camera.main.transform.position);
         }
     }
+
     public void ShowPickupPrompt(bool show)
     {
         if (textPrompt != null)

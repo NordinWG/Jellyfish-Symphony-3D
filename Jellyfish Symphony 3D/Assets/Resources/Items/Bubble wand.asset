@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 31a09aae3bf81704c87ffad839a58328, type: 3}
   m_Name: Bubble wand
   m_EditorClassIdentifier: 
-  itemName: Bubble wand
+  itemName: Bubble Wand
   itemIcon: {fileID: 21300000, guid: d52106a6ef9aab74990f2868e27889f1, type: 3}
   itemType: 1
   maxStack: 1
