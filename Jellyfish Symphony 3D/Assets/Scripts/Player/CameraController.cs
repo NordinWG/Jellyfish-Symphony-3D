@@ -47,8 +47,7 @@ public class CameraController : MonoBehaviour
 
     private void UpdateCanMove()
     {
-        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || 
-                   inventory.enabled || endCutscene.enabled);
+        canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled);
     }
 
     private void LateUpdate()
