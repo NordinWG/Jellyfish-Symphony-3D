@@ -18,6 +18,12 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 moveDirection;
     private bool canMove;
+    public Animator animator;
+
+    public void Start()
+    {
+        animator = GetComponent<Animator>();
+    }
 
     private void Update()
     {
@@ -33,7 +39,7 @@ public class PlayerMovement : MonoBehaviour
         canMove = !(mainMenu.enabled || pauseMenu.enabled || saveLoad.enabled || inventory.enabled || endCutscene.enabled);
     }
 
-    private void HandleMovement()
+    public void HandleMovement()
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
@@ -46,6 +52,9 @@ public class PlayerMovement : MonoBehaviour
         float currentSpeed = moveSpeed;
 
         transform.Translate(moveDirection * currentSpeed * Time.deltaTime, Space.World);
+
+        float moveInput = Input.GetAxisRaw("Horizontal") + Input.GetAxisRaw("Vertical");
+        animator.SetFloat("speed", Mathf.Abs(moveInput));
     }
 
     private void HandleRotation()
