@@ -70,6 +70,8 @@ public class SaveLoadSystem : MonoBehaviour
         string saveName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_Name", "Empty");
         if (saveName == "Empty")
         {
+            // Reset game state before saving a new game
+            ResetGameState();
             SaveGame(slotIndex);
         }
         else
@@ -209,7 +211,40 @@ public class SaveLoadSystem : MonoBehaviour
             }
         }
         PlayerPrefs.Save();
+
+        // Reset game state after deleting saves
+        ResetGameState();
+
         UpdateSaveSlotUI();
+    }
+
+    private void ResetGameState()
+    {
+        // Reset player position and rotation
+        playerMovement.transform.position = Vector3.zero;
+        playerMovement.transform.eulerAngles = Vector3.zero;
+
+        // Reset camera
+        CameraController camController = mainCamera.GetComponent<CameraController>();
+        camController.currentX = 0f;
+        camController.currentY = 10f;
+        camController.UpdateCameraPosition(true);
+
+        // Clear inventory
+        Inventory.instance.inventorySlots.Clear();
+        Inventory.instance.onInventoryChangedCallback?.Invoke();
+
+        // Reset pickup items to their initial state (all active)
+        foreach (GameObject pickup in pickupItems)
+        {
+            if (pickup != null)
+            {
+                pickup.SetActive(true);
+            }
+        }
+
+        // Reset current slot index
+        currentSlotIndex = -1;
     }
 
     void UpdateSaveSlotUI()
