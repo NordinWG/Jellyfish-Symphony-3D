@@ -60,11 +60,12 @@ public class DialogueManager : MonoBehaviour
 
         if (dialogueQueue.Count == 0)
         {
+            Debug.Log("Dialogue queue empty, ending dialogue.");
             dialogueCanvas?.SetActive(false);
             if (currentNPC != null)
             {
                 currentNPC.EndDialogue();
-                currentNPC = null;
+                currentNPC = null; // Prevent multiple calls
             }
             return;
         }

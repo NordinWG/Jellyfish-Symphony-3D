@@ -1,13 +1,12 @@
 using System;
 using UnityEngine;
-using UnityEngine.UIElements;
 
 public class DialogueLines : MonoBehaviour
 {
-    [Header("NPC Settings")] // koptekst
+    [Header("NPC Settings")]
     public string npcName;
-    [TextArea(3, 10)] // groter tekst vak in unity
-    public string[] dialogueLines; // array van strings
+    [TextArea(3, 10)]
+    public string[] dialogueLines;
     public float interactionRange;
     public AudioClip npcVoice;
 
@@ -15,13 +14,32 @@ public class DialogueLines : MonoBehaviour
     public DialogueManager dialogueManager;
     public PlayerMovement PlayerMovement;
 
+    [Header("Quest Items")]
+    public Item shellItem;
+    public Item staffReward;
+
     private Transform player;
     private bool isPlayerInRange;
-    public bool IsDialogueActive { get; private set; } // andere class kan krijgen maar niet aanpassen
+    public bool IsDialogueActive { get; private set; }
+    private bool hasStartedQuest = false;
+
+    void Awake()
+    {
+        if (QuestManager.instance == null)
+        {
+            Debug.LogError("QuestManager instance is null! Ensure QuestManager is in the scene.");
+        }
+        else if (QuestManager.instance.quests.Count == 0)
+        {
+            QuestManager.instance.quests.Add(new QuestManager.Quest(
+                "Find 10 Shells", "Collect 10 shells for the crabs.", shellItem, 10, staffReward));
+            Debug.Log("Initialized 'Find 10 Shells' quest in QuestManager.");
+        }
+    }
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player")?.transform; // niet gevonden = null, oftw geen error
+        player = GameObject.FindGameObjectWithTag("Player")?.transform;
         IsDialogueActive = false;
     }
 
@@ -29,35 +47,49 @@ public class DialogueLines : MonoBehaviour
     {
         if (player != null)
         {
-            float distance = Vector3.Distance(transform.position, player.position); // berekent afstand tussen objecten
-            isPlayerInRange = distance <= interactionRange; // <= kleiner dan of gelijk aan
+            float distance = Vector3.Distance(transform.position, player.position);
+            isPlayerInRange = distance <= interactionRange;
 
-            if (isPlayerInRange && Input.GetKeyDown(KeyCode.T) && !IsDialogueActive) // && is en
+            if (isPlayerInRange)
             {
-                StartDialogue();
+                Debug.Log($"In range. Canvas active: {dialogueManager.dialogueCanvas.activeSelf}, Dialogue active: {IsDialogueActive}, Quest started: {hasStartedQuest}");
             }
+
+            if (isPlayerInRange && Input.GetKeyDown(KeyCode.T))
+            {
+                // 🔧 Only start dialogue if quest has NOT started
+                if (!IsDialogueActive && !dialogueManager.dialogueCanvas.activeSelf && !hasStartedQuest)
+                {
+                    Debug.Log("Starting dialogue with NPC (no active dialogue, canvas off, and quest not started).");
+                    StartDialogue();
+                }
+                else if (!dialogueManager.dialogueCanvas.activeSelf && hasStartedQuest)
+                {
+                    Debug.Log("Player pressed T after dialogue ended and quest started, attempting to turn in quest.");
+                    TryTurnInQuests();
+                }
+                else
+                {
+                    Debug.Log($"Player pressed T, but conditions not met. Canvas active: {dialogueManager.dialogueCanvas.activeSelf}, Dialogue active: {IsDialogueActive}");
+                }
+            }
+        }
+
+        if (isPlayerInRange)
+        {
+            QuestManager.instance.CheckQuestProgress();
         }
     }
 
     void StartDialogue()
     {
-        if (dialogueLines.Length == 0) return; // length kijkt hoeveel elementen in array staan, als array leeg dus 0 dan stopt deze void
+        if (dialogueLines.Length == 0) return;
 
         PlayerMovement.enabled = false;
 
-        // (string speaker, string dialogue) is een tuple type, [] geeft aan dat je een array van tuples wilt maken, naam van array is lines
-        // maakt array van tuples met de speaker en dialogue tekst, gebaseerd op lengte van dialogueLines
-        // tuple is verzameling van meerdere waarden van verschillende types
         (string speaker, string dialogue)[] lines = new (string, string)[dialogueLines.Length];
-
-        // for start een loop waarmee je iets meerdere keren kan uitvoeren
-        // zolang i kleiner is dan het aantal elementen in dialogueLines, blijft de loop lopen
-        // i++ verhoogd i met 1 elke keer als de code uitgevoerd wordt
-        
         for (int i = 0; i < dialogueLines.Length; i++)
         {
-            // de loop vult elke index van de lines array met een tuple bestaande uit de npc-naam en de bijbehorende dialoogregel
-            // de npc-naam blijft hetzelfde voor elke regel, alleen de tekst verandert per herhaling
             lines[i] = (npcName, dialogueLines[i]);
         }
 
@@ -69,6 +101,31 @@ public class DialogueLines : MonoBehaviour
     {
         IsDialogueActive = false;
         PlayerMovement.enabled = true;
+
+        if (!hasStartedQuest)
+        {
+            Debug.Log("Dialogue ended, starting 'Find 10 Shells' quest for the first time.");
+            QuestManager.instance.StartQuest("Find 10 Shells");
+            hasStartedQuest = true;
+        }
+        else
+        {
+            Debug.Log("Dialogue ended, but 'Find 10 Shells' quest was already started.");
+        }
+    }
+
+    void TryTurnInQuests()
+    {
+        Debug.Log("Attempting to turn in 'Find 10 Shells' quest.");
+        if (QuestManager.instance.TurnInQuest("Find 10 Shells"))
+        {
+            Debug.Log("Completed 'Find 10 Shells' quest and received the Staff!");
+            hasStartedQuest = false; // Remove this line if you don't want to restart quest ever again
+        }
+        else
+        {
+            Debug.Log("Failed to turn in 'Find 10 Shells' quest. Check if it's active and completed.");
+        }
     }
 
     void OnDrawGizmosSelected()

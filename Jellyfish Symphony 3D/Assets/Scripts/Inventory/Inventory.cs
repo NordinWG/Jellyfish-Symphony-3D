@@ -74,6 +74,19 @@ public class Inventory : MonoBehaviour
             }
         }
     }
+
+    // ✅ NEW METHOD: Check if the player has at least 1 of the item
+    public bool HasItem(Item item)
+    {
+        foreach (InventorySlot slot in inventorySlots)
+        {
+            if (slot.item == item && slot.quantity > 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 [System.Serializable]
