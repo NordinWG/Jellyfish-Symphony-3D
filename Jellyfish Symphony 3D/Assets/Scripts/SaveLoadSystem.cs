@@ -10,6 +10,8 @@ public class SaveLoadSystem : MonoBehaviour
     public PlayerPickup playerPickup;
     public List<GameObject> pickupItems;
 
+    public Camera mainCamera;
+
     private string[] saveSlotNames = { "SaveSlot1", "SaveSlot2", "SaveSlot3" };
 
     public Canvas saveLoadCanvas;
@@ -32,11 +34,12 @@ public class SaveLoadSystem : MonoBehaviour
         autoSaveCanvas?.SetActive(true);
         autoSaveIcon?.SetActive(false);
         autoSaveText.text = "";
+        saveButton.onClick.AddListener(OnSaveButtonClicked);
     }
 
     void Update()
     {
-        autoSaveTimer -= Time.deltaTime;
+        autoSaveTimer -= Time.unscaledDeltaTime;
 
         if (Input.GetKeyDown(KeyCode.S) && currentSlotIndex != -1)
         {
@@ -87,9 +90,18 @@ public class SaveLoadSystem : MonoBehaviour
             float z = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerZ");
             playerMovement.transform.position = new Vector3(x, y, z);
 
+            float rotX = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerRotX");
+            float rotY = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerRotY");
+            float rotZ = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_PlayerRotZ");
+            playerMovement.transform.eulerAngles = new Vector3(rotX, rotY, rotZ);
+
+            CameraController camController = mainCamera.GetComponent<CameraController>();
+            camController.currentX = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_CameraX", 0f);
+            camController.currentY = PlayerPrefs.GetFloat(saveSlotNames[slotIndex] + "_CameraY", 10f);
+            camController.UpdateCameraPosition(true);
+
             Inventory.instance.inventorySlots.Clear();
             int slotCount = PlayerPrefs.GetInt(saveSlotNames[slotIndex] + "_SlotCount", 0);
-            Debug.Log($"Loading {slotCount} inventory slots for slot {slotIndex}");
             for (int i = 0; i < slotCount; i++)
             {
                 string itemName = PlayerPrefs.GetString(saveSlotNames[slotIndex] + "_ItemName" + i);
@@ -98,11 +110,6 @@ public class SaveLoadSystem : MonoBehaviour
                 if (item != null)
                 {
                     Inventory.instance.inventorySlots.Add(new InventorySlot(item, quantity));
-                    Debug.Log($"Loaded item: {itemName}, Quantity: {quantity}");
-                }
-                else
-                {
-                    Debug.LogWarning($"Failed to load item: {itemName} from Resources/Items/");
                 }
             }
             Inventory.instance.onInventoryChangedCallback?.Invoke();
@@ -116,7 +123,6 @@ public class SaveLoadSystem : MonoBehaviour
                 }
             }
 
-            Debug.Log("Game Loaded from slot " + (slotIndex + 1));
             CloseSaveLoadCanvas();
         }
     }
@@ -129,15 +135,21 @@ public class SaveLoadSystem : MonoBehaviour
         PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerY", playerMovement.transform.position.y);
         PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerZ", playerMovement.transform.position.z);
 
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerRotX", playerMovement.transform.eulerAngles.x);
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerRotY", playerMovement.transform.eulerAngles.y);
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_PlayerRotZ", playerMovement.transform.eulerAngles.z);
+
+        CameraController camController = mainCamera.GetComponent<CameraController>();
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_CameraX", camController.currentX);
+        PlayerPrefs.SetFloat(saveSlotNames[slotIndex] + "_CameraY", camController.currentY);
+
         PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_SlotCount", Inventory.instance.inventorySlots.Count);
-        Debug.Log($"Saving {Inventory.instance.inventorySlots.Count} inventory slots for slot {slotIndex}");
         for (int i = 0; i < Inventory.instance.inventorySlots.Count; i++)
         {
             string itemName = Inventory.instance.inventorySlots[i].item.itemName;
             int quantity = Inventory.instance.inventorySlots[i].quantity;
             PlayerPrefs.SetString(saveSlotNames[slotIndex] + "_ItemName" + i, itemName);
             PlayerPrefs.SetInt(saveSlotNames[slotIndex] + "_ItemQty" + i, quantity);
-            Debug.Log($"Saved item: {itemName}, Quantity: {quantity}");
         }
 
         for (int i = 0; i < pickupItems.Count; i++)
@@ -148,7 +160,6 @@ public class SaveLoadSystem : MonoBehaviour
 
         PlayerPrefs.Save();
         currentSlotIndex = slotIndex;
-        Debug.Log("Game Saved to slot " + (slotIndex + 1));
         CloseSaveLoadCanvas();
     }
 
@@ -183,6 +194,11 @@ public class SaveLoadSystem : MonoBehaviour
             PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerX");
             PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerY");
             PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerZ");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerRotX");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerRotY");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_PlayerRotZ");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_CameraX");
+            PlayerPrefs.DeleteKey(saveSlotNames[i] + "_CameraY");
             PlayerPrefs.DeleteKey(saveSlotNames[i] + "_SlotCount");
 
             for (int j = 0; j < 100; j++)
@@ -212,14 +228,14 @@ public class SaveLoadSystem : MonoBehaviour
     {
         while (autoSaveIcon.activeSelf)
         {
-            autoSaveIcon.transform.Rotate(0, 0, -180 * Time.deltaTime);
+            autoSaveIcon.transform.Rotate(0, 0, -180 * Time.unscaledDeltaTime);
             yield return null;
         }
     }
 
     private IEnumerator HideAutoSaveUI()
     {
-        yield return new WaitForSeconds(2f);
+        yield return new WaitForSecondsRealtime(2f);
         autoSaveIcon.SetActive(false);
         autoSaveText.text = "";
     }

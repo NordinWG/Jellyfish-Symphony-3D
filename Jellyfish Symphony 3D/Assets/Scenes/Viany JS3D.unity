@@ -3120,7 +3120,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 724411231}
+      - m_Target: {fileID: 556969130}
         m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
         m_MethodName: set_enabled
         m_Mode: 6
@@ -3132,10 +3132,10 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
-      - m_Target: {fileID: 556969130}
-        m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
-        m_MethodName: set_enabled
-        m_Mode: 6
+      - m_Target: {fileID: 1236269140}
+        m_TargetAssemblyTypeName: OpenMenus, Assembly-CSharp
+        m_MethodName: ContinueGame
+        m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -6551,6 +6551,7 @@ MonoBehaviour:
   inventoryUI: {fileID: 2054444073}
   MainMenuQUIT: {fileID: 1269729005}
   PauseMainMenuB: {fileID: 114974956}
+  ContinueButton: {fileID: 527055886}
   playerMovement: {fileID: 247306594766163109}
 --- !u!114 &1236269141
 MonoBehaviour:
@@ -8912,6 +8913,8 @@ MonoBehaviour:
   inventory: {fileID: 1403070923}
   endCutscene: {fileID: 1389230149}
   target: {fileID: 247306594766163107}
+  currentX: 0
+  currentY: 0
 --- !u!81 &1581640472
 AudioListener:
   m_ObjectHideFlags: 0
@@ -10479,18 +10482,6 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 1
         m_CallState: 2
-      - m_Target: {fileID: 724411231}
-        m_TargetAssemblyTypeName: UnityEngine.Behaviour, UnityEngine
-        m_MethodName: set_enabled
-        m_Mode: 6
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
 --- !u!114 &1845013901
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11402,6 +11393,7 @@ MonoBehaviour:
   - {fileID: 199490818}
   - {fileID: 394815045}
   - {fileID: 1676681353}
+  mainCamera: {fileID: 1581640473}
   saveLoadCanvas: {fileID: 118420262}
   saveSlotTexts:
   - {fileID: 1245204726}

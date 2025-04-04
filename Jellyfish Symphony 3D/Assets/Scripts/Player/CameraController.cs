@@ -26,8 +26,8 @@ public class CameraController : MonoBehaviour
     public Transform target;
 
     private bool canMove;
-    private float currentX;
-    private float currentY;
+    public float currentX;
+    public float currentY;
     private Vector3 velocity;
 
     private void Start()
@@ -61,7 +61,7 @@ public class CameraController : MonoBehaviour
         UpdateCameraPosition(false);
     }
 
-    private void UpdateCameraPosition(bool instant)
+    public void UpdateCameraPosition(bool instant)
     {
         Quaternion rotation = Quaternion.Euler(currentY, currentX, 0);
         Vector3 direction = rotation * -Vector3.forward;

@@ -3,12 +3,10 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine.UI;
 using UnityEngine;
-using System;
 using TMPro;
 
 public class OpenMenus : MonoBehaviour
 {
-    [Header("Canvas")]
     public Canvas mainmenu;
     public Canvas pausemenu;
     public Canvas saveLoad;
@@ -19,13 +17,14 @@ public class OpenMenus : MonoBehaviour
 
     public Button MainMenuQUIT;
     public Button PauseMainMenuB;
+    public Button ContinueButton;
     public PlayerMovement playerMovement;
-
 
     void Start()
     {
         MainMenuQUIT.onClick.AddListener(QuitGame);
         PauseMainMenuB.onClick.AddListener(ResetGame);
+        ContinueButton.onClick.AddListener(ContinueGame);
     }
 
     void Update()
@@ -91,6 +90,21 @@ public class OpenMenus : MonoBehaviour
     void ResumeGame()
     {
         pausemenu.enabled = false;
+        saveLoad.enabled = false;
+        inventory.enabled = false;
+        mainmenu.enabled = false;
+        endCutscene.enabled = false;
+        Time.timeScale = 1;
+        playerMovement.SetPauseState(false);
+    }
+
+    public void ContinueGame()
+    {
+        pausemenu.enabled = false;
+        saveLoad.enabled = false;
+        inventory.enabled = false;
+        mainmenu.enabled = false;
+        endCutscene.enabled = false;
         Time.timeScale = 1;
         playerMovement.SetPauseState(false);
     }
@@ -104,6 +118,12 @@ public class OpenMenus : MonoBehaviour
     {
         Time.timeScale = 1;
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void OpenSaveLoad()
+    {
+        pausemenu.enabled = false;
+        saveLoad.enabled = true;
     }
 
     void DisableButtonsForInactiveCanvases()
