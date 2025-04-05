@@ -6477,6 +6477,8 @@ MonoBehaviour:
   npcVoice: {fileID: 8300000, guid: c59fbe949c24dca42854568cccea1c1c, type: 3}
   dialogueManager: {fileID: 751825245354053415}
   PlayerMovement: {fileID: 247306594766163109}
+  shellItem: {fileID: 11400000, guid: 541860318f7878d4185c2fefb672b07f, type: 2}
+  staffReward: {fileID: 0}
 --- !u!23 &782092957
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -7594,6 +7596,59 @@ Transform:
   m_Children: []
   m_Father: {fileID: 127604121}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &866596160
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 866596161}
+  - component: {fileID: 866596162}
+  m_Layer: 0
+  m_Name: Quest Manager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &866596161
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866596160}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1951618430}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &866596162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 866596160}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcdb61b352e7e8c4bbd3641fba9b0451, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  quests:
+  - questName: Find 10 Shells
+    description: Find 10 Shells
+    isActive: 0
+    isCompleted: 0
+    requiredItem: {fileID: 11400000, guid: 541860318f7878d4185c2fefb672b07f, type: 2}
+    requiredQuantity: 10
+    rewardItem: {fileID: 11400000, guid: 0dc885e0d975ebb47ad06cbd2c10f3c7, type: 2}
+  crabNPC: {fileID: 782092956}
 --- !u!1001 &878169663
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17239,6 +17294,7 @@ Transform:
   - {fileID: 8709493348968495584}
   - {fileID: 2063918138}
   - {fileID: 1236269139}
+  - {fileID: 866596161}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1960762673
@@ -21147,6 +21203,8 @@ MonoBehaviour:
   npcVoice: {fileID: 8300000, guid: 0262ba7f71ae4874395a6aceed3e429e, type: 3}
   dialogueManager: {fileID: 751825245354053415}
   PlayerMovement: {fileID: 247306594766163109}
+  shellItem: {fileID: 0}
+  staffReward: {fileID: 0}
 --- !u!4 &7478605244984239169 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4654866059245678937, guid: 4dc7ab89ddebaca48a0ff32f06204698, type: 3}
